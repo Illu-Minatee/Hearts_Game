@@ -5,8 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hearts_Game"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Sexy Hearts" Height="720" Width="800" WindowStartupLocation="CenterScreen" Background="Green">
     <Grid>
-
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Menu VerticalAlignment="Top">
+            <MenuItem Header="Game">
+                <MenuItem Header="New Game"></MenuItem>
+                <MenuItem Header="Quit Game"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="Options"></MenuItem>
+        </Menu>
     </Grid>
 </Window>

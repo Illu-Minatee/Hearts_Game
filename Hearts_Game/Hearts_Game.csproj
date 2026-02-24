@@ -8,4 +8,16 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="cardClubsJ.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="cardClubsJ.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="BongsStuff\" />
+  </ItemGroup>
+
 </Project>
