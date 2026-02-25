@@ -17,6 +17,11 @@
                 <MenuItem Header="Quit Game"></MenuItem>
             </MenuItem>
             <MenuItem Header="Options"></MenuItem>
+            <MenuItem Header="Developer"></MenuItem>
         </Menu>
+
+        <Grid x:Name="rootGrid" Grid.Row="1">
+            
+        </Grid>
     </Grid>
 </Window>
