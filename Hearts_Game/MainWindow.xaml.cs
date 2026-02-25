@@ -23,16 +23,18 @@ namespace Hearts_Game
             InitializeComponent();
 
 
+            string targetDirectory = "/GameAssets/Images/Cards/";
+
             foreach (var suit in Enum.GetValues(typeof(CardSuit)))
             {
                 for (int i = 1; i < 14; i++)
                 {
-                    Debug.WriteLine("card" + suit + i + ".png");
+                    Debug.WriteLine(resourceDir + targetDirectory + "card" + suit + i + ".png");
                 }
             }
 
             //Testing Loading Resources and Making a card
-            //string final = target + "/GameAssets/Images/Cards/cardClubsA.png";
+           
 
             //BitmapImage testBM = LoadResources(final);
             //Card test = new Card();
