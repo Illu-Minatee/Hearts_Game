@@ -32,9 +32,6 @@ namespace Hearts_Game
             }
 
             //Testing Loading Resources and Making a card
-
-            //resourceDir = AppContext.BaseDirectory;
-            //string target = Directory.GetParent(resourceDir)?.Parent?.Parent?.Parent?.FullName ?? "";
             //string final = target + "/GameAssets/Images/Cards/cardClubsA.png";
 
             //BitmapImage testBM = LoadResources(final);
@@ -44,12 +41,13 @@ namespace Hearts_Game
             //test.Source = testBM;
 
             //rootGrid.Children.Add(test);
-            
+
         }
 
 
         //Testing Area: This Stuff Cannot Stay Inside this class and will need to have to be abstracted.
-        public readonly string resourceDir = "";
+        public static readonly string resourceDir = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
+
         public Dictionary<string, BitmapImage> cardFaceSprites = [];
 
         private BitmapImage LoadResources(string path)
