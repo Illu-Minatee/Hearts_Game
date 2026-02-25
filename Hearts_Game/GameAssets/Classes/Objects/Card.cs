@@ -28,7 +28,8 @@ namespace Hearts_Game.GameAssets.Classes.Objects
         {
             Value = value;
             Suit = suit;
-            IsFaceUp = faceUp;        
+            IsFaceUp = faceUp;
+            MouseDown += OnMouseClick;
         }
 
         public void Flip()
