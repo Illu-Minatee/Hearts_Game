@@ -23,6 +23,11 @@ namespace Hearts_Game
 
         public static Dictionary<string, BitmapImage> cardFaceSprites = [];
 
+
+
+        private Hand testHand = new Hand();
+        private int cardsToDraw = 13;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -30,6 +35,18 @@ namespace Hearts_Game
             //Loading Resources
             string cardDirectory = "/GameAssets/Images/Cards/";
             cardFaceSprites = GetCardResources(cardDirectory);
+
+            rootGrid.Children.Add(testHand);
+
+            CardSuit testSuit = CardSuit.Hearts;
+
+            for (int i = 0; i < cardsToDraw; i++)
+            {
+                Card c = NewCard(i + 1, testSuit);
+                c.Margin = new Thickness(i * 30, 0, 0, 0);
+                testHand.AddCard(c);
+            }
+
         }
 
 
@@ -54,12 +71,14 @@ namespace Hearts_Game
                     }
 
                     BitmapImage bmi = LoadResources(path);
-                    cardFaceSprites.Add(key, bmi);
+                    imgs.Add(key, bmi);
                 }
             }
 
             return imgs;
         }
+
+
 
         public Card NewCard(int value, CardSuit suit)
         {
