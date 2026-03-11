@@ -16,50 +16,85 @@ using System.Windows.Shapes;
 namespace Hearts_Game
 {
 
+
     public partial class MainWindow : Window
     {
+        public static readonly string resourceDir = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
+
+        public static Dictionary<string, BitmapImage> cardFaceSprites = [];
+
+
+
+        private Hand testHand = new Hand();
+        private int cardsToDraw = 13;
+
         public MainWindow()
         {
             InitializeComponent();
 
+            //Loading Resources
+            string cardDirectory = "/GameAssets/Images/Cards/";
+            cardFaceSprites = GetCardResources(cardDirectory);
 
-            string targetDirectory = "/GameAssets/Images/Cards/";
+            rootGrid.Children.Add(testHand);
+
+            CardSuit testSuit = CardSuit.Hearts;
+
+            for (int i = 0; i < cardsToDraw; i++)
+            {
+                Card c = NewCard(i + 1, testSuit);
+                c.Margin = new Thickness(i * 30, 0, 0, 0);
+                testHand.AddCard(c);
+            }
+
+        }
+
+
+
+
+        //Attempts to load images from internal directory and returns a dictonary of bitmap image.
+        public static Dictionary<string, BitmapImage> GetCardResources(string dir)
+        {        
+            Dictionary<string, BitmapImage> imgs = [];
 
             foreach (var suit in Enum.GetValues(typeof(CardSuit)))
             {
                 for (int i = 1; i < 14; i++)
                 {
-                    Debug.WriteLine(resourceDir + targetDirectory + "card" + suit + i + ".png");
+                    string key = "card" + suit + i;
+                    string path = resourceDir + dir + key + ".png";
+
+                    if (!File.Exists(path))
+                    {
+                        Debug.WriteLine($"Unable to load card images: Path Not Found.\n{path}");
+                        return imgs;
+                    }
+
+                    BitmapImage bmi = LoadResources(path);
+                    imgs.Add(key, bmi);
                 }
             }
 
-            //Testing Loading Resources and Making a card
-           
-
-            //BitmapImage testBM = LoadResources(final);
-            //Card test = new Card();
-            //test.Width = 100;
-            //test.Height = 180;
-            //test.Source = testBM;
-
-            //rootGrid.Children.Add(test);
-
+            return imgs;
         }
 
 
-        //Testing Area: This Stuff Cannot Stay Inside this class and will need to have to be abstracted.
-        public static readonly string resourceDir = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
 
-        public Dictionary<string, BitmapImage> cardFaceSprites = [];
+        public Card NewCard(int value, CardSuit suit)
+        {
+            Card card = new Card(value, suit);
+            card.Width = 100;
+            card.Height = 180;
+            card.Source = cardFaceSprites["card" + suit + value];
+            return card;
+        }
 
-        private BitmapImage LoadResources(string path)
+        private static BitmapImage LoadResources(string path)
         {
             var bmp = new BitmapImage();
             bmp.BeginInit();
-            //bmp.CacheOption = BitmapCacheOption.OnLoad; // prevents file locking
             bmp.UriSource = new Uri(path, UriKind.Absolute);
             bmp.EndInit();
-            //bmp.Freeze(); // makes it cross-thread safe
             return bmp;
         }
     }
