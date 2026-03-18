@@ -17,15 +17,24 @@
                 <MenuItem Header="Quit Game"></MenuItem>
             </MenuItem>
             <MenuItem Header="Options"></MenuItem>
-            <MenuItem Header="Developer"></MenuItem>
+            <MenuItem Header="Developer">
+                <MenuItem Header="X-Ray Cards" IsCheckable="True" Click="OnXRayClick"> </MenuItem>
+            </MenuItem>
         </Menu>
 
         <Grid x:Name="rootGrid" Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="59*"/>
-                <ColumnDefinition Width="341*"/>
-            </Grid.ColumnDefinitions>
+            <Grid x:Name="zoneOne" Background="Magenta" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,492,0,0">
 
+            </Grid>
+            <Grid x:Name="zoneTwo" Background="Magenta" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="32,0,0,0">
+
+            </Grid>
+            <Grid x:Name="zoneThree" Background="Magenta" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="652,0,0,0">
+
+            </Grid>
+            <Grid x:Name="zoneFour" Background="Magenta" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,8,0,0">
+
+            </Grid>
         </Grid>
     </Grid>
 </Window>

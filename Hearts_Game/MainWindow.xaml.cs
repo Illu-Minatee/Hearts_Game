@@ -1,4 +1,5 @@
-﻿using Hearts_Game.GameAssets.Classes.Objects;
+﻿using Hearts_Game.GameAssets.Classes.Managers;
+using Hearts_Game.GameAssets.Classes.Objects;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -15,19 +16,13 @@ using System.Windows.Shapes;
 
 namespace Hearts_Game
 {
-
-
     public partial class MainWindow : Window
     {
+        //Resources and Directory. Needs to be abstracted to a seperate class handling this stuff.
         public static readonly string resourceDir = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
-
         public static Dictionary<string, BitmapImage> cardFaceSprites = [];
-
-
-
-        private Hand testHand = new Hand();
-        private int cardsToDraw = 13;
-
+        public static BitmapImage? cardBack;
+    
         public MainWindow()
         {
             InitializeComponent();
@@ -35,26 +30,29 @@ namespace Hearts_Game
             //Loading Resources
             string cardDirectory = "/GameAssets/Images/Cards/";
             cardFaceSprites = GetCardResources(cardDirectory);
+            cardBack = LoadResources(resourceDir + cardDirectory + "cardBack_red3.png");
 
-            rootGrid.Children.Add(testHand);
-
-            CardSuit testSuit = CardSuit.Hearts;
-
-            for (int i = 0; i < cardsToDraw; i++)
-            {
-                Card c = NewCard(i + 1, testSuit);
-                c.Margin = new Thickness(i * 30, 0, 0, 0);
-                testHand.AddCard(c);
-            }
+            //Testing Setup and Dealing cards.
+            GameManager.Instance.SetZones([zoneOne, zoneTwo, zoneThree, zoneFour]);
+            GameManager.Instance.SetupDeck();
+            GameManager.Instance.DealCards();
 
         }
 
-
-
+        //This should be moved but has references that will need to be address. Move with care and attention.
+        //Face and Back are assumed to be instatiated. This could use error handling.
+        static public Card NewCard(int value, CardSuit suit)
+        {
+            Card card = new(value, suit, cardBack, cardFaceSprites["card" + suit + value]);
+            card.Width = 102;
+            card.Height = 152;
+            card.Stretch = Stretch.Fill;
+            return card;
+        }
 
         //Attempts to load images from internal directory and returns a dictonary of bitmap image.
         public static Dictionary<string, BitmapImage> GetCardResources(string dir)
-        {        
+        {
             Dictionary<string, BitmapImage> imgs = [];
 
             foreach (var suit in Enum.GetValues(typeof(CardSuit)))
@@ -74,21 +72,10 @@ namespace Hearts_Game
                     imgs.Add(key, bmi);
                 }
             }
-
             return imgs;
         }
 
-
-
-        public Card NewCard(int value, CardSuit suit)
-        {
-            Card card = new Card(value, suit);
-            card.Width = 100;
-            card.Height = 180;
-            card.Source = cardFaceSprites["card" + suit + value];
-            return card;
-        }
-
+        //Returns a single bitmap Image to be used as a source for a sprite.
         private static BitmapImage LoadResources(string path)
         {
             var bmp = new BitmapImage();
@@ -96,6 +83,11 @@ namespace Hearts_Game
             bmp.UriSource = new Uri(path, UriKind.Absolute);
             bmp.EndInit();
             return bmp;
+        }
+
+        private void OnXRayClick(object sender, RoutedEventArgs e)
+        {
+            GameManager.Instance.XRayVison();
         }
     }
 }
