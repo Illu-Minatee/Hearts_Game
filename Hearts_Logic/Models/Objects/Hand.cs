@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows;
 
-namespace Hearts_Game.GameAssets.Classes.Objects
+namespace Hearts_Logic.Models.Objects
 {
     public class Hand : Grid
     {
