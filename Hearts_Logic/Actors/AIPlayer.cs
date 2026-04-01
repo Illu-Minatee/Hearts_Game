@@ -29,14 +29,14 @@ namespace Hearts_Logic.Actors
         {
             // Task 16: Basic AI Brain implementation.
             // Currently chooses a random card from its hand to avoid predictable patterns.
-            if (hand.Count > 0)
+            // "hand" is a Hand object, so it has .CardsInHand and .Cards[0]
+            if (hand.CardsInHand > 0)
             {
-                int index = _rng.Next(hand.Count);
-                Card selected = hand[index];
-                hand.RemoveAt(index);
+                Card selected = hand.Cards[0];
+                hand.RemoveCard(selected);
                 return selected;
             }
-            return null;
+            return null!; // ! is used here to indicate that we expect this to never be null in a valid game state.
         }
     }
 }

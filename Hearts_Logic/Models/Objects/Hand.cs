@@ -9,23 +9,24 @@ using System.Windows;
 
 namespace Hearts_Logic.Models.Objects
 {
-    public class Hand : Grid
+    // STEP 1: Removed ": Grid" inheritance to decouple from UI
+    public class Hand
     {
-        public int cardsInHand = 0;
-        public List<Card> cards = [];
-
-        public Hand() 
-        {
-            HorizontalAlignment = HorizontalAlignment.Center;
-            VerticalAlignment = VerticalAlignment.Center;
-        }
+        public List<Card> Cards = new List<Card>();
+        public int CardsInHand => Cards.Count;
 
         public void AddCard(Card card)
         {
-            card.HorizontalAlignment = HorizontalAlignment.Left;
-            Children.Add(card);
-            cards.Add(card);
-            cardsInHand++;
+            // Removed Alignment and Children.Add logic (This belongs in WPF project now)
+            Cards.Add(card);
+        }
+
+        public void RemoveCard(Card card)
+        {
+            if (Cards.Contains(card))
+            {
+                Cards.Remove(card);
+            }
         }
     }
 }

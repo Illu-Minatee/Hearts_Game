@@ -26,13 +26,14 @@ namespace Hearts_Logic.Actors
         {
             // Placeholder: Returning the first card. 
             // In Task 17, we will link this to the GUI click.
-            if (hand.Count > 0)
+            // "hand" is a Hand object, so it has .CardsInHand and .Cards[0]
+            if (hand.CardsInHand > 0)
             {
-                Card selected = hand[0];
-                hand.RemoveAt(0);
+                Card selected = hand.Cards[0];
+                hand.RemoveCard(selected);
                 return selected;
             }
-            return null; // Should not happen in a valid game state
+            return null!; // ! indicates that we expect this to never be null in a valid game state.
         }
     }
 }

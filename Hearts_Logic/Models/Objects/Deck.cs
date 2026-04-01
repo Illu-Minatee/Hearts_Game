@@ -1,7 +1,7 @@
 ﻿
 namespace Hearts_Logic.Models.Objects
 {
-    internal class Deck
+    public class Deck
     {
 
         private List<Card> cards = [];

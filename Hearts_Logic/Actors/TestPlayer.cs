@@ -12,10 +12,18 @@ namespace Hearts_Logic.Actors
     {
         public override Card PlayCard()
         {
-            // Simple logic for testing: just play the first card in hand
-            Card card = hand[0];
-            hand.RemoveAt(0);
-            return card;
+            // Access the .Cards list inside the hand object
+            if (hand.CardsInHand > 0)
+            {
+                // We pick the first card logic-wise
+                Card selected = hand.Cards[0];
+
+                // Use the method we wrote in Hand.cs
+                hand.RemoveCard(selected);
+
+                return selected;
+            }
+            return null!;
         }
     }
 }

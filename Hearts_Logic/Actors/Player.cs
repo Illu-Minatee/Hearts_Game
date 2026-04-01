@@ -7,28 +7,30 @@ using System.Threading.Tasks;
 
 namespace Hearts_Logic.Actors
 {
-    // Step 1: Add "abstract"
     public abstract class Player
     {
         public string Name { get; set; } = "Player";
         public int Score { get; set; } = 0;
 
-        // This is the player's collection of cards
-        protected List<Card> hand = new List<Card>();
+        // STEP 1: Changed from List<Card> to the actual Hand class
+        protected Hand hand = new Hand();
 
-        public int CardsInHand => hand.Count;
+        // STEP 2: Logic change - reference hand.CardsInHand
+        public int CardsInHand => hand.CardsInHand;
 
-        // Abstract method: Forces AI and Human to define how they choose a card
         public abstract Card PlayCard();
 
         public void AddCard(Card card)
         {
-            hand.Add(card);
+            // STEP 3: Uses the Hand class's AddCard method
+            hand.AddCard(card);
         }
 
         public void ClearHand()
         {
-            hand.Clear();
+            // Note: Since we don't have a clear method in Hand yet, 
+            // we just make a new one.
+            hand = new Hand();
         }
     }
 }
