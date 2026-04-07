@@ -18,6 +18,11 @@
 
   <ItemGroup>
     <Folder Include="BongsStuff\" />
+    <Folder Include="GameAssets\Classes\Managers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hearts_Logic\Hearts_Logic.csproj" />
   </ItemGroup>
 
 </Project>

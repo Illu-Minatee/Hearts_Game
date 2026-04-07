@@ -1,7 +1,7 @@
 ﻿
-namespace Hearts_Game.GameAssets.Classes.Objects
+namespace Hearts_Logic.Models.Objects
 {
-    internal class Deck
+    public class Deck
     {
 
         private List<Card> cards = [];
@@ -16,9 +16,10 @@ namespace Hearts_Game.GameAssets.Classes.Objects
         {
             foreach (CardSuit suit in Enum.GetValues(typeof(CardSuit)))
             {
-                for (int i = 0; i < 13; i++)
+                for (int i = 1; i <= 13; i++) // Hearts ranks are usually 1(Ace) to 13(King)
                 {
-                    Card c = MainWindow.NewCard(i+1, suit);
+                    // Instead of asking MainWindow, we create the Card data directly
+                    Card c = new Card(i, suit);
                     cards.Add(c);
                 }
             }
