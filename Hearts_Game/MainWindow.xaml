@@ -14,7 +14,7 @@
         </Grid.RowDefinitions>
         <Menu VerticalAlignment="Top">
             <MenuItem Header="Game">
-                <MenuItem Header="New Game"></MenuItem>
+                <MenuItem Header="New Game" Click="OnNewGameClick"></MenuItem>
                 <MenuItem Header="Quit Game" Click="OnQuitClick"></MenuItem>
             </MenuItem>
             <MenuItem Header="Options">
