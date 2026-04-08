@@ -254,5 +254,28 @@ namespace Hearts_Game
             trickCards.Children.Clear();
         }
 
+        private void OnNewGameClick(object sender, RoutedEventArgs e)
+        {
+            // 1. Tell the Logic Library to clear everything
+            foreach (var player in GameManager.Instance.players)
+            {
+                player.ClearHand();
+            }
+
+            // 2. Clear the center trick area
+            trickCards.Children.Clear();
+
+            // 3. Setup a brand new deck and shuffle
+            GameManager.Instance.SetupDeck();
+
+            // 4. Deal the 52 cards logically
+            GameManager.Instance.DealCards();
+
+            // 5. Redraw all 4 hands and labels on the screen
+            RefreshGameBoard();
+
+            MessageBox.Show("New Hand Dealt!", "Hearts Game");
+        }
+
     }
 }
