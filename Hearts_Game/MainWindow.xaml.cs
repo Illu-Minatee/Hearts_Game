@@ -1,6 +1,7 @@
-﻿using Hearts_Logic.Managers;
-using Hearts_Logic.Models.Objects;
+﻿using Hearts_Game.GameAssets;
 using Hearts_Logic.Actors;
+using Hearts_Logic.Managers;
+using Hearts_Logic.Models.Objects;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -104,6 +105,7 @@ namespace Hearts_Game
                     }
 
                     visualCard.BindData(logicCard, source, isHuman);
+                    visualCard.IsTabStop = isHuman;
 
                     // --- POSITIONING ---
                     visualCard.HorizontalAlignment = HorizontalAlignment.Left;
@@ -215,6 +217,41 @@ namespace Hearts_Game
         {
             // Reuse the same logic from the Esc key
             OnWindowKeyDown(this, new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(this), 0, Key.Escape));
+        }
+
+        /// <summary>
+        /// Moves a card visually to the center of the table.
+        /// Part of Task 17 (Bridging Logic to View).
+        /// </summary>
+        public void ShowPlayedCard(CardUI visualCard, int playerIndex)
+        {
+            // 1. Remove the card from the player's side zone
+            Panel? parent = visualCard.Parent as Panel;
+            parent?.Children.Remove(visualCard);
+
+            // 2. Clear rotation so the card sits flat in the center
+            visualCard.RenderTransform = new TranslateTransform();
+
+            // 3. Position the card based on which player played it
+            // (Standard "North, South, East, West" cross layout)
+            double x = 0, y = 0;
+            if (playerIndex == 0) y = 40;   // South (User)
+            if (playerIndex == 1) x = -50;  // West
+            if (playerIndex == 2) x = 50;   // East
+            if (playerIndex == 3) y = -40;  // North
+
+            visualCard.Margin = new Thickness(x, y, 0, 0);
+            visualCard.HorizontalAlignment = HorizontalAlignment.Center;
+            visualCard.VerticalAlignment = VerticalAlignment.Center;
+
+            // 4. Add to the center
+            trickCards.Children.Add(visualCard);
+        }
+
+        private void OnClearTableClick(object sender, RoutedEventArgs e)
+        {
+            // Remove the 4 cards from the center trick area
+            trickCards.Children.Clear();
         }
 
     }

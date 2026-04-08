@@ -44,6 +44,25 @@
             <Grid x:Name="zoneFour" Background="Magenta" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,8,0,0">
 
             </Grid>
+
+            <Grid x:Name="trickZone" Background="Transparent" Width="300" Height="250" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <!-- Border to help you see the play area during development -->
+                <Border BorderBrush="White" BorderThickness="1" Opacity="0.3" CornerRadius="10"/>
+
+                <Grid x:Name="trickCards">
+                    <!-- The 4 played cards will be added here via code -->
+                </Grid>
+            </Grid>
+
+            <Button x:Name="btnClear" 
+                Content="Clear Table" 
+                Click="OnClearTableClick" 
+                Width="100" Height="30" 
+                Margin="20" 
+                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                IsTabStop="True" 
+                TabIndex="100"/>
+
         </Grid>
     </Grid>
 </Window>
