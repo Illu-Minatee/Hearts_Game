@@ -24,23 +24,22 @@ namespace Hearts_Game
         public static readonly string resourceDir = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
         public static Dictionary<string, BitmapImage> cardFaceSprites = new Dictionary<string, BitmapImage>();
         public static BitmapImage? cardBack;
+        private bool _isXRayActive = false;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // STEP 1: Load visual assets from the local filesystem
+            // Load visual assets
             string cardDirectory = "/GameAssets/Images/Cards/";
             cardFaceSprites = GetCardResources(cardDirectory);
             cardBack = LoadResources(resourceDir + cardDirectory + "cardBack_red3.png");
 
-            // STEP 2: Trigger Logic initialization from the Library
-            // GameManager is now a public Singleton from Hearts_Logic.Managers
+            // Logic Setup
             GameManager.Instance.SetupDeck();
             GameManager.Instance.DealCards();
 
-            // Temporary: Linking Logic to UI zones. 
-            // Task 17 will eventually move this into a specialized View/Presenter class.
+            // Visual Deal - This replaces the logic that was stripped from GameManager
             RefreshGameBoard();
         }
 
@@ -64,13 +63,74 @@ namespace Hearts_Game
         }
 
         /// <summary>
-        /// Orchestrates the visual display of cards currently held in logic players' hands.
+        /// Visual Dealing Logic
+        /// Connects the Logic Hand to the WPF Zones using CardUI Custom Controls
         /// </summary>
         private void RefreshGameBoard()
         {
-            // Placeholder: This logic would iterate through GameManager.Instance.players
-            // and add GetVisualCard(card) to the respective zoneOne, zoneTwo, etc.
-            // Detailed implementation will follow as we rebuild the DealHand UI logic.
+            // Clear all magenta placeholders first
+            zoneOne.Children.Clear();
+            zoneTwo.Children.Clear();
+            zoneThree.Children.Clear();
+            zoneFour.Children.Clear();
+
+            Grid[] zones = { zoneOne, zoneTwo, zoneThree, zoneFour };
+
+            // Loop through the 4 players defined in GameManager
+            for (int p = 0; p < 4; p++)
+            {
+                var player = GameManager.Instance.players[p];
+                bool isHuman = (p == 0); // Only player 0 is the human
+
+                for (int i = 0; i < player.CardsInHand; i++)
+                {
+                    Card logicCard = player.PlayerHand.Cards[i];
+                    GameAssets.CardUI visualCard = new GameAssets.CardUI();
+
+                    // IF HUMAN: Use the face sprite and make it interactable
+                    // IF AI: Use the 'cardBack' image and disable interaction
+                    BitmapImage source;
+
+                    // If the player is the Human OR if we turned on the X-Ray cheat...
+                    if (isHuman || GameManager.Instance.IsXRayEnabled)
+                    {
+                        // Show the card face
+                        source = cardFaceSprites["card" + logicCard.Suit + logicCard.Value];
+                    }
+                    else
+                    {
+                        // Otherwise, keep the AI's cards hidden (Card Back)
+                        source = cardBack!;
+                    }
+
+                    visualCard.BindData(logicCard, source, isHuman);
+
+                    // --- POSITIONING ---
+                    visualCard.HorizontalAlignment = HorizontalAlignment.Left;
+                    visualCard.VerticalAlignment = VerticalAlignment.Top;
+
+                    if (p == 0) // Human (Bottom)
+                    {
+                        visualCard.Margin = new Thickness(i * 30, 0, 0, 0);
+                    }
+                    else if (p == 1) // AI 1 (Left Side)
+                    {
+                        visualCard.RenderTransform = new RotateTransform(90); // Turn it sideways
+                        visualCard.Margin = new Thickness(0, i * 20, 0, 0);
+                    }
+                    else if (p == 2) // AI 2 (Right Side)
+                    {
+                        visualCard.RenderTransform = new RotateTransform(-90); // Turn it other way
+                        visualCard.Margin = new Thickness(0, i * 20, 0, 0);
+                    }
+                    else if (p == 3) // AI 3 (Top)
+                    {
+                        visualCard.Margin = new Thickness(i * 30, 0, 0, 0);
+                    }
+
+                    zones[p].Children.Add(visualCard);
+                }
+            }
         }
 
         /// <summary>
@@ -113,6 +173,49 @@ namespace Hearts_Game
         {
             // UI Layer toggle for card visibility
             GameManager.Instance.XRayVision();
+            // (RefreshGameBoard will now check the Logic Manager's flag)
+            RefreshGameBoard();
         }
+
+        /// <summary>
+        /// Task 38: UI Themes. 
+        /// Updates the cardBack resource and refreshes the visual board.
+        /// </summary>
+        private void OnThemeChange(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item)
+            {
+                // The 'Tag' in XAML tells us which filename to load
+                string themeFile = item.Tag.ToString() ?? "cardBack_red3.png";
+                string cardDirectory = "/GameAssets/Images/Cards/";
+
+                // Load the new global back
+                cardBack = LoadResources(resourceDir + cardDirectory + themeFile);
+
+                // Redraw the board with the new theme
+                RefreshGameBoard();
+            }
+        }
+
+
+        private void OnWindowKeyDown(object sender, KeyEventArgs e)
+        {
+            // Exit or Menu on Escape
+            if (e.Key == Key.Escape)
+            {
+                MessageBoxResult result = MessageBox.Show("Do you want to quit the game?", "Exit", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    Application.Current.Shutdown();
+                }
+            }
+        }
+
+        private void OnQuitClick(object sender, RoutedEventArgs e)
+        {
+            // Reuse the same logic from the Esc key
+            OnWindowKeyDown(this, new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(this), 0, Key.Escape));
+        }
+
     }
 }
