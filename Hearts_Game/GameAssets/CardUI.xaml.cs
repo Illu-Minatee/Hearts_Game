@@ -65,22 +65,31 @@ namespace Hearts_Game.GameAssets
         {
             if (!_isInteractable) return;
 
-            // This is the "Click" part. 
-            // We will later tell the ViewModel that this specific CardData was played.
-            MessageBox.Show($"You clicked: {CardData?.Value} of {CardData?.Suit}");
+            // 1. Get a reference to your main window
+            if (Application.Current.MainWindow is MainWindow mainWin)
+            {
+                // 2. Call the move logic we just wrote (using player index 0 for Human)
+                mainWin.ShowPlayedCard(this, 0);
+
+                // 3. Optional: Logic hook for Task 15 (Points/Rules) later
+                // GameManager.Instance.ProcessTurn(this.CardData);
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
 
-            // If User hits Enter or Space while the card is highlighted
+            // Task 39: If User hits Enter or Space while the card is Tabbed/Focused
             if (e.Key == Key.Enter || e.Key == Key.Space)
             {
-                if (_isInteractable)
+                if (_isInteractable) // If it's the Human player's hand
                 {
-                    MessageBox.Show($"Playing card via keyboard: {CardData?.Value} of {CardData?.Suit}");
-                    // Later: This will call GameManager.Instance.ProcessMove(this.CardData);
+                    if (Application.Current.MainWindow is MainWindow mainWin)
+                    {
+                        // Logic: Jump to the center just like a mouse click
+                        mainWin.ShowPlayedCard(this, 0);
+                    }
                 }
             }
         }
