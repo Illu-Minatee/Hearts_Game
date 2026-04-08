@@ -2,6 +2,8 @@
 using Hearts_Logic.Actors;
 using System;
 using System.Collections.Generic;
+using Hearts_Logic.Services;
+using System.Linq;
 
 namespace Hearts_Logic.Managers
 {
@@ -51,6 +53,7 @@ namespace Hearts_Logic.Managers
             {
                 DealHand(players[i]);
             }
+            SetStartingPlayer();
         }
 
         // Moves cards from the Deck into the specific Player's Hand object.
@@ -93,5 +96,40 @@ namespace Hearts_Logic.Managers
             // In a decoupled architecture, logic merely signals the UI to show values.
             return;
         }
+        public void HandleEndGame()
+        {
+            StatsService stats = new StatsService();
+
+            // Find lowest score (winner in Hearts)
+            int lowestScore = players.Min(p => p.Score);
+
+            foreach (var player in players)
+            {
+                bool isWinner = player.Score == lowestScore;
+                stats.UpdatePlayerStats(player, isWinner);
+            }
+        }
+        public void CheckGameEnd()
+        {
+            foreach (var player in players)
+            {
+                if (player.Score >= 50) 
+                {
+                    HandleEndGame();
+                    return;
+                }
+            }
+        }
+
+        public void SetStartingPlayer()
+        {
+            currentPlayer = (dealerPosition + 1) % 4;
+        }
+
+        public Player GetCurrentPlayer()
+        {
+            return players[currentPlayer];
+        }
+
     }
 }
