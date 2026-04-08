@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Hearts_Logic.Managers;
+using Hearts_Logic.Models.Objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Hearts_Logic.Models.Objects;
 
 namespace Hearts_Game.GameAssets
 {
@@ -63,17 +64,35 @@ namespace Hearts_Game.GameAssets
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (!_isInteractable) return;
+            // Ignore clicks if the card is a back-face or AI card
+            if (!_isInteractable || CardData == null) return;
 
-            // 1. Get a reference to your main window
             if (Application.Current.MainWindow is MainWindow mainWin)
             {
-                // 2. Call the move logic we just wrote (using player index 0 for Human)
-                mainWin.ShowPlayedCard(this, 0);
+                // 1. Logic Check: Ask the GameManager if this move is allowed by Hearts rules
+                bool isMoveLegal = GameManager.Instance.TryPlayCard(GameManager.Instance.players[0], this.CardData);
 
-                // 3. Optional: Logic hook for Task 15 (Points/Rules) later
-                // GameManager.Instance.ProcessTurn(this.CardData);
+                if (isMoveLegal)
+                {
+                    // Visual Fix: Reset the hover pop-up before moving it to the center
+                    _moveTransform.Y = 0;
+                    SelectionBorder.BorderThickness = new Thickness(0);
+
+                    // 2. Visual Move: Tell the MainWindow to show it in the trick area
+                    mainWin.ShowPlayedCard(this, 0);
+                }
+                else
+                {
+                    // Rule Enforcement Feedback
+                    MessageBox.Show("Illegal move! You cannot lead with a Heart until hearts are broken.", "Hearts Rule Enforcer");
+                }
             }
+        }
+
+        public void ResetHighlight()
+        {
+            _moveTransform.Y = 0;
+            SelectionBorder.BorderThickness = new Thickness(0);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

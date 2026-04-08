@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Hearts_Logic.Models.Objects;
 
-
+using Hearts_Logic.Managers;
 namespace Hearts_Logic.Actors
 {
     /// <summary>
-    /// Represents a computer-controlled opponent.
-    /// Inherits from Player and implements automated decision logic.
+    /// Task 34: AI Brain — Integrated Strategic Selection.
+    /// Implements automated decision logic based on current trick state.
     /// </summary>
     public class AIPlayer : Player
     {
@@ -21,22 +21,61 @@ namespace Hearts_Logic.Actors
             this.Name = name;
         }
 
-        /// <summary>
-        /// Polymorphic override.
-        /// Automated logic for card selection.
-        /// </summary>
         public override Card PlayCard()
         {
-            // Task 16: Basic AI Brain implementation.
-            // Currently chooses a random card from its hand to avoid predictable patterns.
-            // "hand" is a Hand object, so it has .CardsInHand and .Cards[0]
-            if (PlayerHand.CardsInHand > 0)
+            if (PlayerHand.CardsInHand == 0) return null!;
+
+            var gm = GameManager.Instance;
+            var handCards = PlayerHand.Cards;
+
+            // CASE 1: Following a trick (cards already on the table)
+            if (gm.CurrentTrick.Count > 0)
             {
-                Card selected = PlayerHand.Cards[0];
-                PlayerHand.RemoveCard(selected);
-                return selected;
+                // Lead suit is determined by the first card played in the trick
+                CardSuit leadSuit = gm.CurrentTrick[0].card.Suit;
+
+                // Find cards in hand that match the lead suit
+                var matchingSuit = handCards.Where(c => c.Suit == leadSuit).ToList();
+
+                if (matchingSuit.Count > 0)
+                {
+                    // MUST follow suit — AI plays the lowest to stay safe
+                    Card toPlay = matchingSuit.OrderBy(c => c.Value).First();
+                    PlayerHand.RemoveCard(toPlay);
+                    return toPlay;
+                }
+                else
+                {
+                    // VOID in lead suit — AI DUMPS its highest penalty card
+                    Card toPlay = handCards
+                        .OrderByDescending(c => c.GetPenaltyValue())   // Penalty cards first
+                        .ThenByDescending(c => c.Value)                 // Then high face value
+                        .First();
+
+                    PlayerHand.RemoveCard(toPlay);
+                    return toPlay;
+                }
             }
-            return null!; // ! is used here to indicate that we expect this to never be null in a valid game state.
+
+            // CASE 2: Leading the trick
+            List<Card> leadCandidates = handCards.ToList();
+
+            // Enforce "Breaking Hearts" rule
+            if (!gm.HeartsBroken)
+            {
+                var nonHearts = handCards.Where(c => c.Suit != CardSuit.Hearts).ToList();
+                if (nonHearts.Count > 0)
+                    leadCandidates = nonHearts;
+            }
+
+            // Safe lead: play the lowest non-penalty card available
+            Card leadCard = leadCandidates
+                .OrderBy(c => c.GetPenaltyValue())
+                .ThenBy(c => c.Value)
+                .First();
+
+            PlayerHand.RemoveCard(leadCard);
+            return leadCard;
         }
     }
 }

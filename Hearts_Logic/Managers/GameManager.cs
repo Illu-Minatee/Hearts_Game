@@ -2,16 +2,17 @@
 using Hearts_Logic.Actors;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Hearts_Logic.Managers
 {
-    // Singleton Class. Creates a static reference to itself if one does not already exist.
-    // Handles majority of game setup functions as well as contains core game state properties.
+    // Singleton Class: The central brain that manages rules and scoring.
     public class GameManager
     {
         public static GameManager Instance { get; } = new GameManager();
-        public bool IsXRayEnabled { get; set; } = false;
+
         public List<Player> players = new List<Player>();
+        public bool IsXRayEnabled { get; set; } = false; // Dev cheat flag (Zehahahaha!)
         private int currentPlayer = 0;
         private int dealerPosition = 0;
 
@@ -19,80 +20,97 @@ namespace Hearts_Logic.Managers
         private int shuffleCount = 3;
         private int cardsToDeal = 13;
 
-        // Private constructor prevents class from being instantiated externally.
+        // Task 20: Pairs the Player with the Card they played to identify winners.
+        public List<(Player player, Card card)> CurrentTrick { get; private set; } = new();
+
+        // Task 32: Rule flag - Hearts can't lead until a Heart has been discarded.
+        private bool _heartsBroken = false;
+        public bool HeartsBroken => _heartsBroken;
+
         private GameManager()
         {
-            // Clear any existing players just in case
             players.Clear();
-
-            // 1. Add the Local Human Player (Index 0)
+            // Default setup: 1 Human vs 3 CPU (Mandatory Requirement)
             players.Add(new HumanPlayer("User"));
-
-            // 2. Add 3 AI Opponents (Indices 1, 2, and 3)
             players.Add(new AIPlayer("CPU West"));
             players.Add(new AIPlayer("CPU North"));
             players.Add(new AIPlayer("CPU East"));
         }
 
+        // Resets state and prepares the 52 cards.
         public void SetupDeck()
         {
             testDeck = new Deck();
             testDeck.Shuffle(shuffleCount);
+            _heartsBroken = false;
+            // Clear any leftover cards from the logic-trick area
+            CurrentTrick.Clear();
         }
 
-        // Deals cards to the internal hand objects of each player.
-        // Fails if players or deck have not been properly initialized.
+        // Logic loop to distribute 13 cards to every hand object.
         public void DealCards()
         {
             if (testDeck == null) return;
-
-            // Deal cards to all 4 players
-            for (int i = 0; i < 4; i++)
-            {
-                DealHand(players[i]);
-            }
+            foreach (var p in players) { DealHand(p); }
         }
 
-        // Moves cards from the Deck into the specific Player's Hand object.
         private void DealHand(Player player)
         {
-            // testDeck is checked for null in the calling method DealCards.
             for (int i = 0; i < cardsToDeal; i++)
             {
-                Card c = testDeck!.DrawCard();
-
-                // Card now stores only logic data. 
-                // Visual properties like Rotation/Flip are handled in the UI Layer later.
-                player.AddCard(c);
+                player.AddCard(testDeck!.DrawCard());
             }
         }
 
-        // Logic to increment through the list of players until the last index (3).
+        // Task 32 Rule Engine: Validates moves before they hit the table.
+        // Returns FALSE if the player tries to break the "Breaking Hearts" rule.
+        public bool TryPlayCard(Player player, Card card)
+        {
+            bool isLeadingTrick = CurrentTrick.Count == 0;
+
+            if (isLeadingTrick && card.Suit == CardSuit.Hearts && !_heartsBroken)
+            {
+                // Verify if player is forced to lead Hearts (no other suits left)
+                bool hasNonHeart = player.PlayerHand.Cards.Any(c => c.Suit != CardSuit.Hearts);
+                if (hasNonHeart) return false; // Illegal move!
+                _heartsBroken = true;
+            }
+
+            if (card.Suit == CardSuit.Hearts) { _heartsBroken = true; }
+
+            // Logical transfer of card from Hand to Trick
+            player.PlayerHand.RemoveCard(card);
+            CurrentTrick.Add((player, card));
+            return true;
+        }
+
+        // Task 20: Finds the player who played the highest card of the led suit.
+        public Player DetermineCurrentTrickWinner()
+        {
+            if (CurrentTrick.Count == 0) return players[0];
+
+            CardSuit leadSuit = CurrentTrick[0].card.Suit;
+            return CurrentTrick
+                .Where(p => p.card.Suit == leadSuit)
+                .OrderByDescending(p => p.card.Value)
+                .First().player;
+        }
+
+        // Task 33: Totals the points in the middle and gives them to the trick winner.
+        public void CalculateTrickPoints()
+        {
+            if (CurrentTrick.Count == 0) return;
+
+            Player winner = DetermineCurrentTrickWinner();
+            winner.Score += CurrentTrick.Sum(p => p.card.GetPenaltyValue());
+            CurrentTrick.Clear();
+        }
+
+        public void XRayVision() { IsXRayEnabled = !IsXRayEnabled; }
+
         public void SwitchPlayer()
         {
-            currentPlayer++;
-            if (currentPlayer > 3) { currentPlayer = 0; }
-        }
-
-        // Determines which player starts the hand and rotates the role clockwise.
-        public void SwitchDealer()
-        {
-            dealerPosition++;
-            if (dealerPosition > 3) { dealerPosition = 0; }
-        }
-
-        // This will be expanded for Actor Implementation (Task 11).
-        public void AddPlayer(Player p)
-        {
-            players.Add(p);
-        }
-
-        // Placeholder for XRay logic - implementation will move to UI Layer (Task 20).
-        public void XRayVision()
-        {
-            // Toggle the logical state of the cheat/developer mode
-            IsXRayEnabled = !IsXRayEnabled;
-
+            currentPlayer = (currentPlayer + 1) % 4;
         }
     }
 }
