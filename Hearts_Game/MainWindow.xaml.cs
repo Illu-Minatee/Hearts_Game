@@ -202,13 +202,40 @@ namespace Hearts_Game
 
         private void OnWindowKeyDown(object sender, KeyEventArgs e)
         {
-            // Exit or Menu on Escape
+            // Mandatory Requirement: Exit or Menu on Escape
             if (e.Key == Key.Escape)
             {
                 MessageBoxResult result = MessageBox.Show("Do you want to quit the game?", "Exit", MessageBoxButton.YesNo);
                 if (result == MessageBoxResult.Yes)
                 {
                     Application.Current.Shutdown();
+                }
+            }
+            // NEW PART: Handle playing cards via Keyboard (Task 39)
+            // If user hits Enter/Space, and the 'focused' item is one of our CardUI controls
+            else if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                if (FocusManager.GetFocusedElement(this) is GameAssets.CardUI visualCard)
+                {
+                    if (visualCard.CardData != null)
+                    {
+                        // Ask Rule Engine if legal
+                        bool isMoveLegal = GameManager.Instance.TryPlayCard(GameManager.Instance.players[0], visualCard.CardData);
+
+                        if (isMoveLegal)
+                        {
+                            // VISUAL FIX: You MUST reset these before moving (Same as MouseDown)
+                            visualCard.ResetHighlight(); // We will add this small helper next
+                            this.ShowPlayedCard(visualCard, 0);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Illegal move! You cannot lead with a Heart until hearts are broken.", "Hearts Rule Enforcer");
+                        }
+
+                        // IMPORTANT: Tell Windows we handled this key so it stops processing
+                        e.Handled = true;
+                    }
                 }
             }
         }
@@ -250,8 +277,20 @@ namespace Hearts_Game
 
         private void OnClearTableClick(object sender, RoutedEventArgs e)
         {
-            // Remove the 4 cards from the center trick area
+            // 1. Logic Check: Don't do anything if no cards are on the table
+            if (GameManager.Instance.CurrentTrick.Count == 0) return;
+
+            // 2. Calculation: Tell the Brain to find the winner and add penalty points (Task 33)
+            GameManager.Instance.CalculateTrickPoints();
+
+            // 3. UI Cleanup: Clear the visual cards from the center zone
             trickCards.Children.Clear();
+
+            // 4. Update the View: Redraw the board to reflect removed cards
+            RefreshGameBoard();
+
+            // Optional Feedback for the Demo:
+            MessageBox.Show("Trick Collected. Penalty points have been assigned to the winner.", "Round Progress");
         }
 
         private void OnNewGameClick(object sender, RoutedEventArgs e)
