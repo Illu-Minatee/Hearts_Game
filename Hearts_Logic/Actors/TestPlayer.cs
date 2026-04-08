@@ -13,15 +13,11 @@ namespace Hearts_Logic.Actors
         public override Card PlayCard()
         {
             // Access the .Cards list inside the hand object
-            if (hand.CardsInHand > 0)
+            if (PlayerHand.CardsInHand > 0)
             {
-                // We pick the first card logic-wise
-                Card selected = hand.Cards[0];
-
-                // Use the method we wrote in Hand.cs
-                hand.RemoveCard(selected);
-
-                return selected;
+                Card selected = PlayerHand.Cards[0];
+                PlayerHand.RemoveCard(selected);
+                return selected; ;
             }
             return null!;
         }

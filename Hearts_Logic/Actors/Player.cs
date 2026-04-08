@@ -13,24 +13,22 @@ namespace Hearts_Logic.Actors
         public int Score { get; set; } = 0;
 
         // STEP 1: Changed from List<Card> to the actual Hand class
-        protected Hand hand = new Hand();
+        public Hand PlayerHand { get; set; } = new Hand();
 
         // STEP 2: Logic change - reference hand.CardsInHand
-        public int CardsInHand => hand.CardsInHand;
+        public int CardsInHand => PlayerHand.CardsInHand;
 
         public abstract Card PlayCard();
 
         public void AddCard(Card card)
         {
-            // STEP 3: Uses the Hand class's AddCard method
-            hand.AddCard(card);
+            PlayerHand.AddCard(card);
         }
 
         public void ClearHand()
         {
-            // Note: Since we don't have a clear method in Hand yet, 
-            // we just make a new one.
-            hand = new Hand();
+            // Re-initialize the player's hand for the next game
+            PlayerHand = new Hand();
         }
     }
 }

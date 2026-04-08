@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hearts_Game"
         mc:Ignorable="d"
-        Title="Hearts" Height="720" Width="800" WindowStartupLocation="CenterScreen" Background="Green">
+        Title="Hearts" Height="720" Width="800" WindowStartupLocation="CenterScreen" Background="Green"
+        KeyDown="OnWindowKeyDown">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -14,9 +15,17 @@
         <Menu VerticalAlignment="Top">
             <MenuItem Header="Game">
                 <MenuItem Header="New Game"></MenuItem>
-                <MenuItem Header="Quit Game"></MenuItem>
+                <MenuItem Header="Quit Game" Click="OnQuitClick"></MenuItem>
             </MenuItem>
-            <MenuItem Header="Options"></MenuItem>
+            <MenuItem Header="Options">
+
+                <MenuItem Header="Card Theme">
+                    <MenuItem Header="Red" Click="OnThemeChange" Tag="cardBack_red3.png"/>
+                    <MenuItem Header="Blue" Click="OnThemeChange" Tag="cardBack_blue3.png"/>
+                    <MenuItem Header="Green" Click="OnThemeChange" Tag="cardBack_green3.png"/>
+                </MenuItem>
+
+            </MenuItem>
             <MenuItem Header="Developer">
                 <MenuItem Header="X-Ray Cards" IsCheckable="True" Click="OnXRayClick"> </MenuItem>
             </MenuItem>

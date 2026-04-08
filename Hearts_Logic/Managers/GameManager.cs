@@ -10,8 +10,8 @@ namespace Hearts_Logic.Managers
     public class GameManager
     {
         public static GameManager Instance { get; } = new GameManager();
-
-        private List<Player> players = new List<Player>();
+        public bool IsXRayEnabled { get; set; } = false;
+        public List<Player> players = new List<Player>();
         private int currentPlayer = 0;
         private int dealerPosition = 0;
 
@@ -90,8 +90,9 @@ namespace Hearts_Logic.Managers
         // Placeholder for XRay logic - implementation will move to UI Layer (Task 20).
         public void XRayVision()
         {
-            // In a decoupled architecture, logic merely signals the UI to show values.
-            return;
+            // Toggle the logical state of the cheat/developer mode
+            IsXRayEnabled = !IsXRayEnabled;
+
         }
     }
 }
