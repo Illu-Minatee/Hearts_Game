@@ -5,64 +5,270 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hearts_Game"
         mc:Ignorable="d"
-        Title="Hearts" Height="720" Width="800" WindowStartupLocation="CenterScreen" Background="Green"
+        Title="Hearts"
+        Height="720"
+        Width="1280"
+        WindowStartupLocation="CenterScreen"
+        Background="Green"
         KeyDown="OnWindowKeyDown">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <Menu VerticalAlignment="Top">
-            <MenuItem Header="Game">
-                <MenuItem Header="New Game" Click="OnNewGameClick"></MenuItem>
-                <MenuItem Header="Quit Game" Click="OnQuitClick"></MenuItem>
-            </MenuItem>
-            <MenuItem Header="Options">
 
-                <MenuItem Header="Card Theme">
-                    <MenuItem Header="Red" Click="OnThemeChange" Tag="cardBack_red3.png"/>
-                    <MenuItem Header="Blue" Click="OnThemeChange" Tag="cardBack_blue3.png"/>
-                    <MenuItem Header="Green" Click="OnThemeChange" Tag="cardBack_green3.png"/>
+    <Grid>
+        <!-- START SCREEN -->
+        <Grid x:Name="StartScreen" Background="#0E5F0E" Visibility="Visible">
+            <Border Width="420"
+                    Padding="30"
+                    Background="#DDEBDD"
+                    CornerRadius="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Hearts"
+                               FontSize="34"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,20"/>
+
+                    <TextBlock Text="Enter your player name"
+                               FontSize="18"
+                               Margin="0,0,0,10"/>
+
+                    <TextBox x:Name="txtPlayerName"
+                             Height="38"
+                             FontSize="18"
+                             Text="Player"
+                             Margin="0,0,0,20"/>
+
+                    <Button x:Name="btnStartFromIntro"
+                            Content="Start Game"
+                            Height="45"
+                            FontSize="18"
+                            Click="OnStartFromIntroClick"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- GAME SCREEN -->
+        <Grid x:Name="GameScreen" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Menu Grid.Row="0" VerticalAlignment="Top">
+                <MenuItem Header="Game">
+                    <MenuItem Header="New Game" Click="OnNewGameClick"/>
+                    <MenuItem Header="Quit Game" Click="OnQuitClick"/>
                 </MenuItem>
 
-            </MenuItem>
-            <MenuItem Header="Developer">
-                <MenuItem Header="X-Ray Cards" IsCheckable="True" Click="OnXRayClick"> </MenuItem>
-            </MenuItem>
-        </Menu>
+                <MenuItem Header="Options">
+                    <MenuItem Header="Card Theme">
+                        <MenuItem Header="Red" Click="OnThemeChange" Tag="cardBack_red3.png"/>
+                        <MenuItem Header="Blue" Click="OnThemeChange" Tag="cardBack_blue3.png"/>
+                        <MenuItem Header="Green" Click="OnThemeChange" Tag="cardBack_green3.png"/>
+                    </MenuItem>
+                </MenuItem>
 
-        <Grid x:Name="rootGrid" Grid.Row="1">
-            <Grid x:Name="zoneOne" Background="Magenta" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,492,0,0">
+                <MenuItem Header="Developer">
+                    <MenuItem Header="X-Ray Cards" IsCheckable="True" Click="OnXRayClick"/>
+                </MenuItem>
+            </Menu>
 
-            </Grid>
-            <Grid x:Name="zoneTwo" Background="Magenta" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="32,0,0,0">
+            <Grid x:Name="rootGrid" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="260"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="360"/>
+                </Grid.ColumnDefinitions>
 
-            </Grid>
-            <Grid x:Name="zoneThree" Background="Magenta" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="652,0,0,0">
+                <!-- LEFT PANEL -->
+                <StackPanel Grid.Column="0"
+                            Margin="18,18,12,18"
+                            VerticalAlignment="Top"
+                            Panel.ZIndex="30">
 
-            </Grid>
-            <Grid x:Name="zoneFour" Background="Magenta" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,8,0,0">
+                    <Border Background="#DDEBDD"
+                            CornerRadius="12"
+                            Padding="16"
+                            Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Current Player"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       Margin="0,0,0,12"/>
+                            <TextBlock x:Name="txtCurrentPlayerName"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Text="Player"/>
+                        </StackPanel>
+                    </Border>
 
-            </Grid>
+                    <Border Background="#DDEBDD"
+                            CornerRadius="12"
+                            Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Round Info"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       Margin="0,0,0,12"/>
 
-            <Grid x:Name="trickZone" Background="Transparent" Width="300" Height="250" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <!-- Border to help you see the play area during development -->
-                <Border BorderBrush="White" BorderThickness="1" Opacity="0.3" CornerRadius="10"/>
+                            <TextBlock x:Name="txtLeadSuit"
+                                       FontSize="16"
+                                       Margin="0,6,0,0"
+                                       Text="Lead Suit: None"/>
 
-                <Grid x:Name="trickCards">
-                    <!-- The 4 played cards will be added here via code -->
+                            <TextBlock x:Name="txtHeartsBroken"
+                                       FontSize="16"
+                                       Margin="0,6,0,0"
+                                       Text="Hearts Broken: No"/>
+
+                            <TextBlock x:Name="txtTrickCount"
+                                       FontSize="16"
+                                       Margin="0,6,0,0"
+                                       Text="Trick #: 1"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- CENTER TABLE AREA -->
+                <Grid Grid.Column="1" Margin="10">
+                    <Grid x:Name="zoneOne"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Bottom"
+                          Margin="0,0,0,90"
+                          Panel.ZIndex="5"/>
+
+                    <Grid x:Name="zoneTwo"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Center"
+                          Margin="40,0,0,0"
+                          Panel.ZIndex="5"/>
+
+                    <Grid x:Name="zoneThree"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Margin="0,0,40,0"
+                          Panel.ZIndex="5"/>
+
+                    <Grid x:Name="zoneFour"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Top"
+                          Margin="0,25,0,0"
+                          Panel.ZIndex="5"/>
+
+                    <Grid x:Name="trickZone"
+                          Width="320"
+                          Height="240"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Background="Transparent"
+                          Panel.ZIndex="10">
+                        <Border BorderBrush="White"
+                                BorderThickness="1"
+                                Opacity="0.35"
+                                CornerRadius="10"/>
+                        <Grid x:Name="trickCards"/>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,0,10"
+                                Panel.ZIndex="20">
+                        <Button x:Name="btnStartGame"
+                                Content="New Game"
+                                Click="OnNewGameClick"
+                                Width="140"
+                                Height="38"
+                                Margin="8"/>
+
+                        <Button x:Name="btnClear"
+                                Content="Clear Table"
+                                Click="OnClearTableClick"
+                                Width="140"
+                                Height="38"
+                                Margin="8"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- RIGHT PANEL -->
+                <Grid Grid.Column="2" Margin="12,18,18,18" Panel.ZIndex="30">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Background="#DDEBDD"
+                            CornerRadius="12"
+                            Padding="16"
+                            Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Scoreboard"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       Margin="0,0,0,12"/>
+
+                            <TextBlock x:Name="txtPlayer1Score"
+                                       FontSize="16"
+                                       Margin="0,5,0,0"
+                                       Text="Player: 0"/>
+
+                            <TextBlock x:Name="txtPlayer2Score"
+                                       FontSize="16"
+                                       Margin="0,5,0,0"
+                                       Text="CPU West: 0"/>
+
+                            <TextBlock x:Name="txtPlayer3Score"
+                                       FontSize="16"
+                                       Margin="0,5,0,0"
+                                       Text="CPU North: 0"/>
+
+                            <TextBlock x:Name="txtPlayer4Score"
+                                       FontSize="16"
+                                       Margin="0,5,0,0"
+                                       Text="CPU East: 0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="2"
+                            Background="#DDEBDD"
+                            CornerRadius="12"
+                            Padding="16"
+                            Height="310">
+                        <StackPanel>
+                            <TextBlock Text="Game Log"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       Margin="0,0,0,12"/>
+
+                            <ListBox x:Name="lstGameLog"
+                                     Height="230"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Grid>
+        </Grid>
 
-            <Button x:Name="btnClear" 
-                Content="Clear Table" 
-                Click="OnClearTableClick" 
-                Width="100" Height="30" 
-                Margin="20" 
-                HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                IsTabStop="True" 
-                TabIndex="100"/>
-
+        <!-- LOADING OVERLAY -->
+        <Grid x:Name="LoadingOverlay"
+              Background="#AA000000"
+              Visibility="Collapsed"
+              Panel.ZIndex="999">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border Background="White" Padding="20" CornerRadius="12">
+                    <StackPanel>
+                        <TextBlock Text="Loading game..."
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,12"/>
+                        <ProgressBar Width="250"
+                                     Height="20"
+                                     IsIndeterminate="True"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>

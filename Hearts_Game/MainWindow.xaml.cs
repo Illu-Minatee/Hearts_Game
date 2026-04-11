@@ -15,7 +15,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using System.Threading.Tasks;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 
 namespace Hearts_Game
 {
@@ -25,28 +27,27 @@ namespace Hearts_Game
         public static readonly string resourceDir = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
         public static Dictionary<string, BitmapImage> cardFaceSprites = new Dictionary<string, BitmapImage>();
         public static BitmapImage? cardBack;
-        private bool _isXRayActive = false;
+        private string _humanPlayerName = "Player";
+        private int _currentPlayerIndex = 0;
+        private int _cardsPlayedThisTrick = 0;
+        private bool _isAnimatingCard = false;
+        private CardSuit? _leadSuit = null;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Load visual assets
             string cardDirectory = "/GameAssets/Images/Cards/";
             cardFaceSprites = GetCardResources(cardDirectory);
             cardBack = LoadResources(resourceDir + cardDirectory + "cardBack_red3.png");
 
-            // Logic Setup
-            GameManager.Instance.SetupDeck();
-            GameManager.Instance.DealCards();
-
-            // Visual Deal - This replaces the logic that was stripped from GameManager
-            RefreshGameBoard();
+            StartScreen.Visibility = Visibility.Visible;
+            GameScreen.Visibility = Visibility.Collapsed;
+            LoadingOverlay.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
-        /// This method bridges the Logic Card to a UI Image.
-        /// It satisfies Task 17's requirement of separating Data from View.
+        /// Creates a card image for the UI.
         /// </summary>
         public static Image GetVisualCard(Card logicCard)
         {
@@ -63,13 +64,58 @@ namespace Hearts_Game
             return cardImage;
         }
 
+        private async void OnStartFromIntroClick(object sender, RoutedEventArgs e)
+        {
+            _humanPlayerName = string.IsNullOrWhiteSpace(txtPlayerName.Text)
+                ? "Player"
+                : txtPlayerName.Text.Trim();
+
+            LoadingOverlay.Visibility = Visibility.Visible;
+            await Task.Delay(1000);
+
+            StartNewGame();
+
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+            StartScreen.Visibility = Visibility.Collapsed;
+            GameScreen.Visibility = Visibility.Visible;
+        }
+
+        private void StartNewGame()
+        {
+            GameManager.Instance.players.Clear();
+
+            GameManager.Instance.players.Add(new HumanPlayer(_humanPlayerName)); // 0 → South
+            GameManager.Instance.players.Add(new AIPlayer("CPU West"));          // 1 → West
+            GameManager.Instance.players.Add(new AIPlayer("CPU North"));         // 2 → North
+            GameManager.Instance.players.Add(new AIPlayer("CPU East"));          // 3 → East
+
+            foreach (var player in GameManager.Instance.players)
+            {
+                player.ClearHand();
+                player.Score = 0;
+            }
+
+            trickCards.Children.Clear();
+
+            GameManager.Instance.SetupDeck();
+            GameManager.Instance.DealCards();
+            _currentPlayerIndex = 0;
+            _cardsPlayedThisTrick = 0;
+            _isAnimatingCard = false;
+
+            RefreshGameBoard();
+            RefreshInfoPanels();
+
+            AddLog($"New game started for {_humanPlayerName}.");
+            AddLog("Cards dealt to all 4 players.");
+        }
+
         /// <summary>
-        /// Visual Dealing Logic
-        /// Connects the Logic Hand to the WPF Zones using CardUI Custom Controls
+        /// Draws all player cards on the table.
         /// </summary>
         private void RefreshGameBoard()
         {
-            // Clear all magenta placeholders first
+            // Clear all existing visual cards first
             zoneOne.Children.Clear();
             zoneTwo.Children.Clear();
             zoneThree.Children.Clear();
@@ -88,7 +134,7 @@ namespace Hearts_Game
                     Card logicCard = player.PlayerHand.Cards[i];
                     GameAssets.CardUI visualCard = new GameAssets.CardUI();
 
-                    // IF HUMAN: Use the face sprite and make it interactable
+                    // IF HUMAN: Use the face sprite and allow interaction only on the Human's turn
                     // IF AI: Use the 'cardBack' image and disable interaction
                     BitmapImage source;
 
@@ -104,8 +150,11 @@ namespace Hearts_Game
                         source = cardBack!;
                     }
 
-                    visualCard.BindData(logicCard, source, isHuman);
-                    visualCard.IsTabStop = isHuman;
+                    // Only allow the Human to click their cards during their own turn
+                    bool canInteract = isHuman && _currentPlayerIndex == 0 && !_isAnimatingCard;
+
+                    visualCard.BindData(logicCard, source, canInteract);
+                    visualCard.IsTabStop = canInteract;
 
                     // --- POSITIONING ---
                     visualCard.HorizontalAlignment = HorizontalAlignment.Left;
@@ -113,30 +162,79 @@ namespace Hearts_Game
 
                     if (p == 0) // Human (Bottom)
                     {
-                        visualCard.Margin = new Thickness(i * 30, 0, 0, 0);
+                        visualCard.Margin = new Thickness(i * 25, 0, 0, 0);
                     }
                     else if (p == 1) // AI 1 (Left Side)
                     {
                         visualCard.RenderTransform = new RotateTransform(90); // Turn it sideways
-                        visualCard.Margin = new Thickness(0, i * 20, 0, 0);
+                        visualCard.Margin = new Thickness(0, i * 18, 0, 0);
                     }
                     else if (p == 2) // AI 2 (Right Side)
                     {
                         visualCard.RenderTransform = new RotateTransform(-90); // Turn it other way
-                        visualCard.Margin = new Thickness(0, i * 20, 0, 0);
+                        visualCard.Margin = new Thickness(0, i * 18, 0, 0);
                     }
                     else if (p == 3) // AI 3 (Top)
                     {
-                        visualCard.Margin = new Thickness(i * 30, 0, 0, 0);
+                        visualCard.Margin = new Thickness(i * 25, 0, 0, 0);
                     }
 
                     zones[p].Children.Add(visualCard);
                 }
             }
+
+            // After the board is drawn, update the active player highlight
+            UpdateTurnUI();
+        }
+
+
+        /// <summary>
+        /// Highlights the current player's area.
+        /// </summary>
+        private void UpdateTurnUI()
+        {
+            // Make sure players exist
+            if (GameManager.Instance.players.Count < 4)
+                return;
+
+            // Update the label on the left panel
+            txtCurrentPlayerName.Text = GameManager.Instance.players[_currentPlayerIndex].Name;
+
+            Grid[] zones = new Grid[4];
+
+            // Correct table layout
+            zones[0] = zoneOne;   // South (Human - bottom)
+            zones[1] = zoneTwo;   // West (left)
+            zones[2] = zoneFour;  // North (top) 
+            zones[3] = zoneThree; // East (right)  
+
+            for (int i = 0; i < zones.Length; i++)
+            {
+                // Highlight current player
+                zones[i].Opacity = i == _currentPlayerIndex ? 1.0 : 0.65;
+                Panel.SetZIndex(zones[i], i == _currentPlayerIndex ? 20 : 5);
+
+                if (i == _currentPlayerIndex)
+                {
+                    // Add a gold glow around the current player
+                    zones[i].Effect = new System.Windows.Media.Effects.DropShadowEffect
+                    {
+                        Color = Colors.Gold,
+                        BlurRadius = 25,
+                        ShadowDepth = 0,
+                        Opacity = 0.9
+                    };
+                }
+                else
+                {
+                    // Remove glow from inactive players
+                    zones[i].Effect = null;
+                }
+            }
         }
 
         /// <summary>
-        /// Loads images from directory into memory for high-speed UI updates.
+        /// Loads card images.
         /// </summary>
         public static Dictionary<string, BitmapImage> GetCardResources(string dir)
         {
@@ -180,8 +278,7 @@ namespace Hearts_Game
         }
 
         /// <summary>
-        /// Task 38: UI Themes. 
-        /// Updates the cardBack resource and refreshes the visual board.
+        /// Changes the card back theme.
         /// </summary>
         private void OnThemeChange(object sender, RoutedEventArgs e)
         {
@@ -221,60 +318,209 @@ namespace Hearts_Game
 
         /// <summary>
         /// Moves a card visually to the center of the table.
-        /// Part of Task 17 (Bridging Logic to View).
         /// </summary>
-        public void ShowPlayedCard(CardUI visualCard, int playerIndex)
+        public async void ShowPlayedCard(CardUI visualCard, int playerIndex)
         {
-            // 1. Remove the card from the player's side zone
+            if (_isAnimatingCard)
+                return;
+
+            if (playerIndex != _currentPlayerIndex)
+                return;
+
+            await PlayCardToCenterAsync(visualCard, playerIndex);
+        }
+        /// <summary>
+        /// Moves a played card to the center with animation.
+        /// </summary>
+        private async Task PlayCardToCenterAsync(CardUI visualCard, int playerIndex)
+        {
+            if (visualCard.CardData == null)
+                return;
+
+            _isAnimatingCard = true;
+
+            Card playedCard = visualCard.CardData;
+
+            // --- SET LEAD SUIT ---
+            // If this is the first card of the trick, define the lead suit
+            if (_cardsPlayedThisTrick == 0)
+            {
+                _leadSuit = playedCard.Suit;
+
+                // Update UI
+                RefreshInfoPanels();
+            }
+
+            // Remove from logical hand first
+            GameManager.Instance.players[playerIndex].PlayerHand.RemoveCard(playedCard);
+
+            // Remove from current visual parent if it came from a hand zone
             Panel? parent = visualCard.Parent as Panel;
             parent?.Children.Remove(visualCard);
 
-            // 2. Clear rotation so the card sits flat in the center
-            visualCard.RenderTransform = new TranslateTransform();
+            // Disable extra input during animation
+            visualCard.IsHitTestVisible = false;
+            visualCard.RenderTransform = Transform.Identity;
 
-            // 3. Position the card based on which player played it
-            // (Standard "North, South, East, West" cross layout)
-            double x = 0, y = 0;
-            if (playerIndex == 0) y = 40;   // South (User)
-            if (playerIndex == 1) x = -50;  // West
-            if (playerIndex == 2) x = 50;   // East
-            if (playerIndex == 3) y = -40;  // North
+            double finalX = 0;
+            double finalY = 0;
 
-            visualCard.Margin = new Thickness(x, y, 0, 0);
+            if (playerIndex == 0) finalY = 55;
+            if (playerIndex == 1) finalX = -70;
+            if (playerIndex == 2) finalY = -55;
+            if (playerIndex == 3) finalX = 70;
+
+            Thickness startMargin;
+            Thickness endMargin = new Thickness(finalX, finalY, 0, 0);
+
+            // Starting position for each player
+            if (playerIndex == 0) // South / bottom
+                startMargin = new Thickness(finalX, 220, 0, 0);
+            else if (playerIndex == 1) // West / left
+                startMargin = new Thickness(-220, finalY, 0, 0);
+            else if (playerIndex == 2) // North / top
+                startMargin = new Thickness(finalX, -220, 0, 0);
+            else // playerIndex == 3 // East / right
+                startMargin = new Thickness(220, finalY, 0, 0);
+
             visualCard.HorizontalAlignment = HorizontalAlignment.Center;
             visualCard.VerticalAlignment = VerticalAlignment.Center;
+            visualCard.Margin = startMargin;
 
-            // 4. Add to the center
             trickCards.Children.Add(visualCard);
+
+            ThicknessAnimation slideAnim = new ThicknessAnimation
+            {
+                From = startMargin,
+                To = endMargin,
+                Duration = TimeSpan.FromMilliseconds(300),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            visualCard.BeginAnimation(FrameworkElement.MarginProperty, slideAnim);
+
+            await Task.Delay(330);
+
+            _cardsPlayedThisTrick++;
+
+            // Refresh again after the card is visually placed
+            RefreshInfoPanels();
+
+            await AdvanceTurnAsync();
         }
 
+        /// <summary>
+        /// Moves to the next turn.
+        /// </summary>
+        private async Task AdvanceTurnAsync()
+        {
+            // End of trick: for now just clear after 4 cards
+            if (_cardsPlayedThisTrick >= 4)
+            {
+                await Task.Delay(700);
+
+                trickCards.Children.Clear();
+                _cardsPlayedThisTrick = 0;
+                _currentPlayerIndex = 0; // temporary reset to human until full trick winner logic is added
+                _leadSuit = null; // Reset lead suit for next trick
+
+                _isAnimatingCard = false;
+
+                RefreshGameBoard();
+                RefreshInfoPanels();
+                return;
+            }
+
+            _currentPlayerIndex = (_currentPlayerIndex + 1) % 4;
+
+            _isAnimatingCard = false;
+
+            RefreshGameBoard();
+            RefreshInfoPanels();
+
+            if (_currentPlayerIndex != 0)
+                await PlaySimpleCpuTurnsAsync();
+        }
+        private async Task PlaySimpleCpuTurnsAsync()
+        {
+            while (_currentPlayerIndex != 0 && _cardsPlayedThisTrick < 4)
+            {
+                await Task.Delay(500);
+
+                var cpuPlayer = GameManager.Instance.players[_currentPlayerIndex];
+
+                if (cpuPlayer.PlayerHand.CardsInHand == 0)
+                    return;
+
+                Card cpuCard = cpuPlayer.PlayerHand.Cards[0];
+
+                CardUI cpuVisual = new CardUI();
+                BitmapImage face = cardFaceSprites["card" + cpuCard.Suit + cpuCard.Value];
+                cpuVisual.BindData(cpuCard, face, false);
+
+                await PlayCardToCenterAsync(cpuVisual, _currentPlayerIndex);
+            }
+        }
         private void OnClearTableClick(object sender, RoutedEventArgs e)
         {
             // Remove the 4 cards from the center trick area
             trickCards.Children.Clear();
         }
 
-        private void OnNewGameClick(object sender, RoutedEventArgs e)
+        private async void OnNewGameClick(object sender, RoutedEventArgs e)
         {
-            // 1. Tell the Logic Library to clear everything
-            foreach (var player in GameManager.Instance.players)
+            LoadingOverlay.Visibility = Visibility.Visible;
+            await Task.Delay(800);
+
+            StartNewGame();
+
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+        }
+        private void RefreshInfoPanels()
+        {
+            RefreshCurrentPlayer();
+            RefreshScoreboard();
+            RefreshRoundInfo();
+        }
+        /// <summary>
+        /// Updates the current player label.
+        /// </summary>
+        private void RefreshCurrentPlayer()
+        {
+            if (GameManager.Instance.players.Count == 0)
+                return;
+
+            txtCurrentPlayerName.Text = GameManager.Instance.players[_currentPlayerIndex].Name;
+        }
+
+        private void RefreshScoreboard()
+        {
+            if (GameManager.Instance.players.Count < 4)
+                return;
+
+            txtPlayer1Score.Text = $"{GameManager.Instance.players[0].Name}: {GameManager.Instance.players[0].Score}";
+            txtPlayer2Score.Text = $"{GameManager.Instance.players[1].Name}: {GameManager.Instance.players[1].Score}";
+            txtPlayer3Score.Text = $"{GameManager.Instance.players[2].Name}: {GameManager.Instance.players[2].Score}";
+            txtPlayer4Score.Text = $"{GameManager.Instance.players[3].Name}: {GameManager.Instance.players[3].Score}";
+        }
+
+        private void RefreshRoundInfo()
+        {
+            if (_leadSuit == null)
             {
-                player.ClearHand();
+                txtLeadSuit.Text = "Lead Suit: None";
             }
+            else
+            {
+                txtLeadSuit.Text = "Lead Suit: " + _leadSuit.ToString();
+            }
+            txtHeartsBroken.Text = "Hearts Broken: No";
+            txtTrickCount.Text = "Trick #: 1";
+        }
 
-            // 2. Clear the center trick area
-            trickCards.Children.Clear();
-
-            // 3. Setup a brand new deck and shuffle
-            GameManager.Instance.SetupDeck();
-
-            // 4. Deal the 52 cards logically
-            GameManager.Instance.DealCards();
-
-            // 5. Redraw all 4 hands and labels on the screen
-            RefreshGameBoard();
-
-            MessageBox.Show("New Hand Dealt!", "Hearts Game");
+        private void AddLog(string message)
+        {
+            lstGameLog.Items.Insert(0, $"{DateTime.Now:HH:mm:ss} - {message}");
         }
 
     }
