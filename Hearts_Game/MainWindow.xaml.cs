@@ -54,8 +54,8 @@ namespace Hearts_Game
             // Create a temporary WPF Image to represent the data object
             Image cardImage = new Image
             {
-                Width = 102,
-                Height = 152,
+                Width = 50,
+                Height = 60,
                 Stretch = Stretch.Fill,
                 // Assign the source using the suit/value data from the logicCard
                 Source = cardFaceSprites["card" + logicCard.Suit + logicCard.Value]
@@ -374,10 +374,10 @@ namespace Hearts_Game
             double finalX = 0;
             double finalY = 0;
 
-            if (playerIndex == 0) finalY = 55;
-            if (playerIndex == 1) finalX = -70;
-            if (playerIndex == 2) finalY = -55;
-            if (playerIndex == 3) finalX = 70;
+            if (playerIndex == 0) finalY = 100;
+            if (playerIndex == 1) finalX = -140;
+            if (playerIndex == 2) finalY = -100;
+            if (playerIndex == 3) finalX = 140;
 
             Thickness startMargin;
             Thickness endMargin = new Thickness(finalX, finalY, 0, 0);
