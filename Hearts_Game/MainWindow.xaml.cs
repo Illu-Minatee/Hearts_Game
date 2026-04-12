@@ -4,26 +4,19 @@ using Hearts_Logic.Managers;
 using Hearts_Logic.Models.Objects;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Threading.Tasks;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Effects;
+
 
 namespace Hearts_Game
 {
     public partial class MainWindow : Window
     {
-        // Directory handling for asset loading - points to the project's visual resources
+        // Path used to load card images
         public static readonly string resourceDir = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
         public static Dictionary<string, BitmapImage> cardFaceSprites = new Dictionary<string, BitmapImage>();
         public static BitmapImage? cardBack;
@@ -51,13 +44,13 @@ namespace Hearts_Game
         /// </summary>
         public static Image GetVisualCard(Card logicCard)
         {
-            // Create a temporary WPF Image to represent the data object
+            // Create image for the card
             Image cardImage = new Image
             {
-                Width = 102,
-                Height = 152,
+                Width = 45,
+                Height = 55,
                 Stretch = Stretch.Fill,
-                // Assign the source using the suit/value data from the logicCard
+                //  Set the card image
                 Source = cardFaceSprites["card" + logicCard.Suit + logicCard.Value]
             };
 
@@ -136,10 +129,10 @@ namespace Hearts_Game
                     GameAssets.CardUI visualCard = new GameAssets.CardUI();
 
                     // IF HUMAN: Use the face sprite and allow interaction only on the Human's turn
-                    // IF AI: Use the 'cardBack' image and disable interaction
+                    // AI cards use the card back
                     BitmapImage source;
 
-                    // If the player is the Human OR if we turned on the X-Ray cheat...
+                    // Show face card for player or X-Ray mode
                     if (isHuman || GameManager.Instance.IsXRayEnabled)
                     {
                         // Show the card face
@@ -151,13 +144,13 @@ namespace Hearts_Game
                         source = cardBack!;
                     }
 
-                    // Only allow the Human to click their cards during their own turn
+                    // Only allow the Human to click their cards during their turn
                     bool canInteract = isHuman && _currentPlayerIndex == 0 && !_isAnimatingCard;
 
                     visualCard.BindData(logicCard, source, canInteract);
                     visualCard.IsTabStop = canInteract;
 
-                    // --- POSITIONING ---
+                    // Card position
                     visualCard.HorizontalAlignment = HorizontalAlignment.Left;
                     visualCard.VerticalAlignment = VerticalAlignment.Top;
 
@@ -265,7 +258,7 @@ namespace Hearts_Game
             var bmp = new BitmapImage();
             bmp.BeginInit();
             bmp.UriSource = new Uri(path, UriKind.Absolute);
-            bmp.CacheOption = BitmapCacheOption.OnLoad; // Optimization for high performance
+            bmp.CacheOption = BitmapCacheOption.OnLoad; //  Load image now
             bmp.EndInit();
             return bmp;
         }
@@ -344,7 +337,7 @@ namespace Hearts_Game
 
         private void OnQuitClick(object sender, RoutedEventArgs e)
         {
-            // Reuse the same logic from the Esc key
+            // Esc for exit
             OnWindowKeyDown(this, new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(this), 0, Key.Escape));
         }
 
@@ -359,8 +352,6 @@ namespace Hearts_Game
             if (playerIndex != _currentPlayerIndex)
                 return;
 
-
-
             await PlayCardToCenterAsync(visualCard, playerIndex);
         }
         /// <summary>
@@ -374,7 +365,7 @@ namespace Hearts_Game
             _isAnimatingCard = true;
 
             Card playedCard = visualCard.CardData;
-            // Add played card to log for both human and CPU
+            // Add card play to log
             AddLog(GameManager.Instance.players[playerIndex].Name + " played " + GetCardName(playedCard));
 
             // --- SET LEAD SUIT ---
@@ -394,22 +385,22 @@ namespace Hearts_Game
             Panel? parent = visualCard.Parent as Panel;
             parent?.Children.Remove(visualCard);
 
-            // Disable extra input during animation
+            // Stop clicks during animation
             visualCard.IsHitTestVisible = false;
             visualCard.RenderTransform = Transform.Identity;
 
             double finalX = 0;
             double finalY = 0;
 
-            if (playerIndex == 0) finalY = 55;
-            if (playerIndex == 1) finalX = -70;
-            if (playerIndex == 2) finalY = -55;
-            if (playerIndex == 3) finalX = 70;
+            if (playerIndex == 0) finalY = 120;
+            if (playerIndex == 1) finalX = -180;
+            if (playerIndex == 2) finalY = -120;
+            if (playerIndex == 3) finalX = 180;
 
             Thickness startMargin;
             Thickness endMargin = new Thickness(finalX, finalY, 0, 0);
 
-            // Starting position for each player
+            // start position for each player
             if (playerIndex == 0) // South / bottom
                 startMargin = new Thickness(finalX, 220, 0, 0);
             else if (playerIndex == 1) // West / left
@@ -611,6 +602,28 @@ namespace Hearts_Game
             }
 
             return valueText + " of " + card.Suit;
+        }
+
+        private void OnHelpClick(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(
+                "How to Play\n\n" +
+                "- Enter your name and start the game.\n" +
+                "- You are the bottom player.\n" +
+                "- Click a card to play your turn.\n" +
+                "- You must follow the lead suit if possible.\n" +
+                "- Hearts cannot be played until broken.\n\n" +
+
+                "Features\n\n" +
+                "- Game Log shows all actions.\n" +
+                "- Scoreboard shows scores.\n" +
+                "- X-Ray mode reveals all cards.\n" +
+                "- Theme option changes card appearance.\n\n" +
+
+                "Goal\n\n" +
+                "Avoid collecting hearts and the Queen of Spades.\n" +
+                "The player with the lowest score wins."
+            );
         }
 
     }

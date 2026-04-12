@@ -71,6 +71,7 @@
                 <MenuItem Header="Developer">
                     <MenuItem Header="X-Ray Cards" IsCheckable="True" Click="OnXRayClick"/>
                 </MenuItem>
+                <MenuItem Header="Help" Click="OnHelpClick"/>
             </Menu>
 
             <Grid x:Name="rootGrid" Grid.Row="1">
@@ -177,10 +178,11 @@
                           Panel.ZIndex="5"/>
 
                     <Grid x:Name="trickZone"
-                          Width="360"
-                          Height="220"
+                          Width="320"
+                          Height="270"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
+                          Margin="0,-60,0,0"
                           Background="Transparent"
                           Panel.ZIndex="10">
                         <Border BorderBrush="#CCCCCC"
