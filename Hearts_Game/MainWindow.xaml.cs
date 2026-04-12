@@ -574,5 +574,27 @@ namespace Hearts_Game
             return valueText + " of " + card.Suit;
         }
 
+        private void OnHelpClick(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(
+                "How to Play\n\n" +
+                "- Enter your name and start the game.\n" +
+                "- You are the bottom player.\n" +
+                "- Click a card to play your turn.\n" +
+                "- You must follow the lead suit if possible.\n" +
+                "- Hearts cannot be played until broken.\n\n" +
+
+                "Features\n\n" +
+                "- Game Log shows all actions.\n" +
+                "- Scoreboard shows scores.\n" +
+                "- X-Ray mode reveals all cards.\n" +
+                "- Theme option changes card appearance.\n\n" +
+
+                "Goal\n\n" +
+                "Avoid collecting hearts and the Queen of Spades.\n" +
+                "The player with the lowest score wins."
+            );
+        }
+
     }
 }

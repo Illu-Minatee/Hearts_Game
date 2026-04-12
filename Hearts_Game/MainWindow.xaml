@@ -71,6 +71,7 @@
                 <MenuItem Header="Developer">
                     <MenuItem Header="X-Ray Cards" IsCheckable="True" Click="OnXRayClick"/>
                 </MenuItem>
+                <MenuItem Header="Help" Click="OnHelpClick"/>
             </Menu>
 
             <Grid x:Name="rootGrid" Grid.Row="1">
