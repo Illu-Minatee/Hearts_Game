@@ -97,6 +97,7 @@ namespace Hearts_Game
 
             trickCards.Children.Clear();
 
+            lstGameLog.Items.Clear();
             GameManager.Instance.SetupDeck();
             GameManager.Instance.DealCards();
             _currentPlayerIndex = 0;
@@ -273,6 +274,7 @@ namespace Hearts_Game
         {
             // UI Layer toggle for card visibility
             GameManager.Instance.XRayVision();
+            AddLog("X-Ray mode changed.");
             // (RefreshGameBoard will now check the Logic Manager's flag)
             RefreshGameBoard();
         }
@@ -290,6 +292,9 @@ namespace Hearts_Game
 
                 // Load the new global back
                 cardBack = LoadResources(resourceDir + cardDirectory + themeFile);
+
+                string themeName = item.Header.ToString() ?? "Default";
+                AddLog("Card theme changed to " + themeName + ".");
 
                 // Redraw the board with the new theme
                 RefreshGameBoard();
@@ -354,6 +359,8 @@ namespace Hearts_Game
             if (playerIndex != _currentPlayerIndex)
                 return;
 
+
+
             await PlayCardToCenterAsync(visualCard, playerIndex);
         }
         /// <summary>
@@ -367,6 +374,8 @@ namespace Hearts_Game
             _isAnimatingCard = true;
 
             Card playedCard = visualCard.CardData;
+            // Add played card to log for both human and CPU
+            AddLog(GameManager.Instance.players[playerIndex].Name + " played " + GetCardName(playedCard));
 
             // --- SET LEAD SUIT ---
             // If this is the first card of the trick, define the lead suit
@@ -446,6 +455,7 @@ namespace Hearts_Game
             {
                 await Task.Delay(700);
 
+                AddLog("Trick ended.");
                 trickCards.Children.Clear();
                 _cardsPlayedThisTrick = 0;
                 _currentPlayerIndex = 0; // temporary reset to human until full trick winner logic is added
@@ -555,11 +565,52 @@ namespace Hearts_Game
             }
             txtHeartsBroken.Text = "Hearts Broken: No";
             txtTrickCount.Text = "Trick #: 1";
+
+            // Update card count labels
+            txtSouthCount.Text = GameManager.Instance.players[0].Name + " Cards: " +
+                                 GameManager.Instance.players[0].CardsInHand;
+
+            txtWestCount.Text = "CPU West Cards: " + GameManager.Instance.players[1].CardsInHand;
+            txtNorthCount.Text = "CPU North Cards: " + GameManager.Instance.players[2].CardsInHand;
+            txtEastCount.Text = "CPU East Cards: " + GameManager.Instance.players[3].CardsInHand;
         }
 
         private void AddLog(string message)
         {
             lstGameLog.Items.Insert(0, $"{DateTime.Now:HH:mm:ss} - {message}");
+
+            // Keep log from getting too long
+            if (lstGameLog.Items.Count > 8)
+            {
+                lstGameLog.Items.RemoveAt(lstGameLog.Items.Count - 1);
+            }
+        }
+        private string GetCardName(Card card)
+        {
+            string valueText;
+
+            if (card.Value == 1)
+            {
+                valueText = "Ace";
+            }
+            else if (card.Value == 11)
+            {
+                valueText = "Jack";
+            }
+            else if (card.Value == 12)
+            {
+                valueText = "Queen";
+            }
+            else if (card.Value == 13)
+            {
+                valueText = "King";
+            }
+            else
+            {
+                valueText = card.Value.ToString();
+            }
+
+            return valueText + " of " + card.Suit;
         }
 
     }

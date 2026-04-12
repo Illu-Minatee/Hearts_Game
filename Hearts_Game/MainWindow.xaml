@@ -12,7 +12,7 @@
         Background="Green"
         KeyDown="OnWindowKeyDown">
 
-    <Grid>
+    <Grid>          
         <!-- START SCREEN -->
         <Grid x:Name="StartScreen" Background="#0E5F0E" Visibility="Visible">
             <Border Width="420"
@@ -125,6 +125,27 @@
                                        FontSize="16"
                                        Margin="0,6,0,0"
                                        Text="Trick #: 1"/>
+
+                            <!-- Cards left for each player -->
+                            <TextBlock x:Name="txtSouthCount"
+                                       FontSize="16"
+                                       Margin="0,6,0,0"
+                                       Text="Player Cards: 13"/>
+
+                            <TextBlock x:Name="txtWestCount"
+                                       FontSize="16"
+                                       Margin="0,6,0,0"
+                                       Text="West Cards: 13"/>
+
+                            <TextBlock x:Name="txtNorthCount"
+                                       FontSize="16"
+                                       Margin="0,6,0,0"
+                                       Text="North Cards: 13"/>
+
+                            <TextBlock x:Name="txtEastCount"
+                                       FontSize="16"
+                                       Margin="0,6,0,0"
+                                       Text="East Cards: 13"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -134,7 +155,7 @@
                     <Grid x:Name="zoneOne"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Bottom"
-                          Margin="0,0,0,90"
+                          Margin="0,0,0,65"
                           Panel.ZIndex="5"/>
 
                     <Grid x:Name="zoneTwo"
@@ -156,16 +177,17 @@
                           Panel.ZIndex="5"/>
 
                     <Grid x:Name="trickZone"
-                          Width="320"
-                          Height="240"
+                          Width="360"
+                          Height="220"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
                           Background="Transparent"
                           Panel.ZIndex="10">
-                        <Border BorderBrush="White"
+                        <Border BorderBrush="#CCCCCC"
                                 BorderThickness="1"
-                                Opacity="0.35"
-                                CornerRadius="10"/>
+                                Opacity="0.85"
+                                CornerRadius="12"
+                                Background="#145A14"/>
                         <Grid x:Name="trickCards"/>
                     </Grid>
 
