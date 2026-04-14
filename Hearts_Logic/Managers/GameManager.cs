@@ -3,6 +3,7 @@ using Hearts_Logic.Actors;
 using System;
 using System.Collections.Generic;
 
+
 namespace Hearts_Logic.Managers
 {
     // Singleton Class. Creates a static reference to itself if one does not already exist.
@@ -21,6 +22,7 @@ namespace Hearts_Logic.Managers
         public List<(Player player, Card card)> CurrentTrick { get; private set; } = new();
         private CardSuit? _leadSuit = null;
         private bool _heartsBroken = false;
+        public CardSuit? LeadSuit => _leadSuit;
 
         // Private constructor prevents class from being instantiated externally.
         private GameManager()

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Hearts_Logic.Managers;
+using Hearts_Logic.Models.Objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Hearts_Logic.Models.Objects;
 
 
 namespace Hearts_Logic.Actors
@@ -27,16 +28,25 @@ namespace Hearts_Logic.Actors
         /// </summary>
         public override Card PlayCard()
         {
-            // Task 16: Basic AI Brain implementation.
-            // Currently chooses a random card from its hand to avoid predictable patterns.
-            // "hand" is a Hand object, so it has .CardsInHand and .Cards[0]
-            if (PlayerHand.CardsInHand > 0)
+            if (PlayerHand.CardsInHand == 0)
+                return null!;
+
+            CardSuit? leadSuit = GameManager.Instance.LeadSuit;
+
+            // Follow the lead suit if possible
+            if (leadSuit != null)
             {
-                Card selected = PlayerHand.Cards[0];
-                PlayerHand.RemoveCard(selected);
-                return selected;
+                foreach (Card card in PlayerHand.Cards)
+                {
+                    if (card.Suit == leadSuit)
+                    {
+                        return card;
+                    }
+                }
             }
-            return null!; // ! is used here to indicate that we expect this to never be null in a valid game state.
+
+            // If no matching suit, play the first card
+            return PlayerHand.Cards[0];
         }
     }
 }

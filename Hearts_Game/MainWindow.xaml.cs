@@ -89,6 +89,7 @@ namespace Hearts_Game
             }
 
             trickCards.Children.Clear();
+            GameManager.Instance.ClearTrick();
 
             lstGameLog.Items.Clear();
             GameManager.Instance.SetupDeck();
@@ -421,6 +422,7 @@ namespace Hearts_Game
 
                 AddLog("Trick ended.");
                 trickCards.Children.Clear();
+                GameManager.Instance.ClearTrick();
                 _cardsPlayedThisTrick = 0;
                 _currentPlayerIndex = 0; // temporary reset to human until full trick winner logic is added
                 _leadSuit = null; // Reset lead suit for next trick
@@ -453,7 +455,7 @@ namespace Hearts_Game
                 if (cpuPlayer.PlayerHand.CardsInHand == 0)
                     return;
 
-                Card cpuCard = cpuPlayer.PlayerHand.Cards[0];
+                Card cpuCard = cpuPlayer.PlayCard();
 
                 CardUI cpuVisual = new CardUI();
                 BitmapImage face = cardFaceSprites["card" + cpuCard.Suit + cpuCard.Value];
