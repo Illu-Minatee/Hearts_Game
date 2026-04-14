@@ -18,6 +18,9 @@ namespace Hearts_Logic.Managers
         private Deck? testDeck;
         private int shuffleCount = 3;
         private int cardsToDeal = 13;
+        public List<(Player player, Card card)> CurrentTrick { get; private set; } = new();
+        private CardSuit? _leadSuit = null;
+        private bool _heartsBroken = false;
 
         // Private constructor prevents class from being instantiated externally.
         private GameManager()
@@ -93,6 +96,98 @@ namespace Hearts_Logic.Managers
             // Toggle the logical state of the cheat/developer mode
             IsXRayEnabled = !IsXRayEnabled;
 
+        }
+
+        private bool PlayerHasSuit(Player player, CardSuit suit)
+        {
+            foreach (Card c in player.PlayerHand.Cards)
+            {
+                if (c.Suit == suit)
+                    return true;
+            }
+            return false;
+        }
+        public bool TryPlayCard(Player player, Card card)
+        {
+            // First card in trick
+            if (CurrentTrick.Count == 0)
+            {
+                // Cannot lead hearts until broken,
+                // unless player has only hearts left
+                if (card.Suit == CardSuit.Hearts && !_heartsBroken)
+                {
+                    bool hasNonHeart = false;
+
+                    foreach (Card c in player.PlayerHand.Cards)
+                    {
+                        if (c.Suit != CardSuit.Hearts)
+                        {
+                            hasNonHeart = true;
+                            break;
+                        }
+                    }
+
+                    if (hasNonHeart)
+                        return false;
+                }
+
+                _leadSuit = card.Suit;
+            }
+            else
+            {
+                // Must follow lead suit if possible
+                if (_leadSuit != null &&
+                    card.Suit != _leadSuit &&
+                    PlayerHasSuit(player, _leadSuit.Value))
+                {
+                    return false;
+                }
+            }
+
+            // If any heart is played, hearts are broken
+            if (card.Suit == CardSuit.Hearts)
+            {
+                _heartsBroken = true;
+            }
+
+            CurrentTrick.Add((player, card));
+            return true;
+        }
+
+        public Player GetTrickWinner()
+        {
+            if (CurrentTrick.Count == 0 || _leadSuit == null)
+                return null!;
+
+            Player winner = CurrentTrick[0].player;
+            Card winningCard = CurrentTrick[0].card;
+
+            foreach (var play in CurrentTrick)
+            {
+                if (play.card.Suit == _leadSuit && play.card.Value > winningCard.Value)
+                {
+                    winner = play.player;
+                    winningCard = play.card;
+                }
+            }
+
+            return winner;
+        }
+        public int CalculateTrickPoints()
+        {
+            int total = 0;
+
+            foreach (var play in CurrentTrick)
+            {
+                total += play.card.GetPenaltyValue();
+            }
+
+            return total;
+        }
+        public void ClearTrick()
+        {
+            CurrentTrick.Clear();
+            _leadSuit = null;
         }
     }
 }
