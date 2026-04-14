@@ -24,6 +24,14 @@ namespace Hearts_Logic.Managers
         private bool _heartsBroken = false;
         public CardSuit? LeadSuit => _leadSuit;
 
+        public bool HeartsBroken
+        {
+            get
+            {
+                return _heartsBroken;
+            }
+        }
+
         // Private constructor prevents class from being instantiated externally.
         private GameManager()
         {
@@ -105,7 +113,9 @@ namespace Hearts_Logic.Managers
             foreach (Card c in player.PlayerHand.Cards)
             {
                 if (c.Suit == suit)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -166,7 +176,8 @@ namespace Hearts_Logic.Managers
 
             foreach (var play in CurrentTrick)
             {
-                if (play.card.Suit == _leadSuit && play.card.Value > winningCard.Value)
+                if (play.card.Suit == _leadSuit &&
+                    GetCardRank(play.card) > GetCardRank(winningCard))
                 {
                     winner = play.player;
                     winningCard = play.card;
@@ -190,6 +201,13 @@ namespace Hearts_Logic.Managers
         {
             CurrentTrick.Clear();
             _leadSuit = null;
+        }
+        private int GetCardRank(Card card)
+        {
+            if (card.Value == 1)
+                return 14; // Ace is highest
+
+            return card.Value;
         }
     }
 }

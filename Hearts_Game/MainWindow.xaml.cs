@@ -356,8 +356,12 @@ namespace Hearts_Game
             GameManager.Instance.players[playerIndex].PlayerHand.RemoveCard(playedCard);
 
             // Remove from current visual parent if it came from a hand zone
-            Panel? parent = visualCard.Parent as Panel;
-            parent?.Children.Remove(visualCard);
+            Panel parent = visualCard.Parent as Panel;
+
+            if (parent != null)
+            {
+                parent.Children.Remove(visualCard);
+            }
 
             // Stop clicks during animation
             visualCard.IsHitTestVisible = false;
@@ -420,17 +424,35 @@ namespace Hearts_Game
             {
                 await Task.Delay(700);
 
-                AddLog("Trick ended.");
+                // Find who won the trick
+                Player winner = GameManager.Instance.GetTrickWinner();
+
+                // Calculate trick points
+                int points = GameManager.Instance.CalculateTrickPoints();
+
+                // Add points to the winner
+                winner.Score += points;
+
+                AddLog(winner.Name + " won the trick.");
+                AddLog(winner.Name + " received " + points + " point(s).");
+
                 trickCards.Children.Clear();
                 GameManager.Instance.ClearTrick();
+
                 _cardsPlayedThisTrick = 0;
-                _currentPlayerIndex = 0; // temporary reset to human until full trick winner logic is added
-                _leadSuit = null; // Reset lead suit for next trick
+                _leadSuit = null;
+
+                // Winner starts next trick
+                _currentPlayerIndex = GameManager.Instance.players.IndexOf(winner);
 
                 _isAnimatingCard = false;
 
                 RefreshGameBoard();
                 RefreshInfoPanels();
+
+                if (_currentPlayerIndex != 0)
+                    await PlaySimpleCpuTurnsAsync();
+
                 return;
             }
 
@@ -455,7 +477,22 @@ namespace Hearts_Game
                 if (cpuPlayer.PlayerHand.CardsInHand == 0)
                     return;
 
-                Card cpuCard = cpuPlayer.PlayCard();
+                Card cpuCard = null;
+
+                // Find the first valid card the CPU can play
+                foreach (Card card in cpuPlayer.PlayerHand.Cards)
+                {
+                    if (GameManager.Instance.TryPlayCard(cpuPlayer, card))
+                    {
+                        cpuCard = card;
+                        break;
+                    }
+                }
+
+                if (cpuCard == null)
+                {
+                    return;
+                }
 
                 CardUI cpuVisual = new CardUI();
                 BitmapImage face = cardFaceSprites["card" + cpuCard.Suit + cpuCard.Value];
@@ -517,7 +554,8 @@ namespace Hearts_Game
             {
                 txtLeadSuit.Text = "Lead Suit: " + _leadSuit.ToString();
             }
-            txtHeartsBroken.Text = "Hearts Broken: No";
+            txtHeartsBroken.Text = "Hearts Broken: " +
+                (GameManager.Instance.HeartsBroken ? "Yes" : "No");
             txtTrickCount.Text = "Trick #: 1";
 
             // Update card count labels
