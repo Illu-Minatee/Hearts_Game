@@ -585,13 +585,10 @@ namespace Hearts_Game
 
         private void AddLog(string message)
         {
-            lstGameLog.Items.Insert(0, $"{DateTime.Now:HH:mm:ss} - {message}");
+            lstGameLog.Items.Add($"{DateTime.Now:HH:mm:ss} - {message}");
 
-            // Keep log from getting too long
-            if (lstGameLog.Items.Count > 8)
-            {
-                lstGameLog.Items.RemoveAt(lstGameLog.Items.Count - 1);
-            }
+            // Auto scroll to latest
+            lstGameLog.ScrollIntoView(lstGameLog.Items[lstGameLog.Items.Count - 1]);
         }
         private string GetCardName(Card card)
         {
