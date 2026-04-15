@@ -436,6 +436,12 @@ namespace Hearts_Game
                 // Add points to the winner
                 winner.Score += points;
 
+                if (CheckForGameWinner())
+                {
+                    RefreshInfoPanels();
+                    return;
+                }
+
                 AddLog(winner.Name + " won the trick.");
                 AddLog(winner.Name + " received " + points + " point(s).");
 
@@ -453,6 +459,12 @@ namespace Hearts_Game
 
                 RefreshGameBoard();
                 RefreshInfoPanels();
+                if (IsHandFinished())
+                {
+                    MessageBox.Show("Hand finished. Starting a new hand.", "Hearts");
+                    StartNextHand();
+                    return;
+                }
 
                 if (_currentPlayerIndex != 0)
                     await PlaySimpleCpuTurnsAsync();
@@ -629,6 +641,72 @@ namespace Hearts_Game
                 "Avoid collecting hearts and the Queen of Spades.\n" +
                 "The player with the lowest score wins."
             );
+        }
+
+        private bool CheckForGameWinner()
+        {
+            foreach (var player in GameManager.Instance.players)
+            {
+                if (player.Score >= 50)
+                {
+                    Player lowestPlayer = GameManager.Instance.players[0];
+
+                    foreach (var p in GameManager.Instance.players)
+                    {
+                        if (p.Score < lowestPlayer.Score)
+                        {
+                            lowestPlayer = p;
+                        }
+                    }
+
+                    MessageBox.Show(lowestPlayer.Name + " wins the game with the lowest score!",
+                                    "Game Over");
+
+                    AddLog(lowestPlayer.Name + " won the game.");
+                    StartNewGame();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsHandFinished()
+        {
+            foreach (var player in GameManager.Instance.players)
+            {
+                if (player.CardsInHand > 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void StartNextHand()
+        {
+            foreach (var player in GameManager.Instance.players)
+            {
+                player.ClearHand();
+            }
+
+            trickCards.Children.Clear();
+            GameManager.Instance.ClearTrick();
+            GameManager.Instance.SetupDeck();
+            GameManager.Instance.DealCards();
+
+            _cardsPlayedThisTrick = 0;
+            _leadSuit = null;
+            _trickNumber = 1;
+            _isAnimatingCard = false;
+            _currentPlayerIndex = 0;
+
+            RefreshGameBoard();
+            RefreshInfoPanels();
+
+            AddLog("New hand started.");
+            AddLog("Cards dealt to all 4 players.");
         }
 
     }
