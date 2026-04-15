@@ -119,7 +119,7 @@ namespace Hearts_Game
             zoneThree.Children.Clear();
             zoneFour.Children.Clear();
 
-            Grid[] zones = { zoneOne, zoneTwo, zoneThree, zoneFour };
+            Grid[] zones = { zoneOne, zoneTwo, zoneFour, zoneThree };
 
             // Loop through the 4 players defined in GameManager
             for (int p = 0; p < 4; p++)
@@ -167,14 +167,14 @@ namespace Hearts_Game
                         visualCard.RenderTransform = new RotateTransform(90); // Turn it sideways
                         visualCard.Margin = new Thickness(0, i * 18, 0, 0);
                     }
-                    else if (p == 2) // AI 2 (Right Side)
-                    {
-                        visualCard.RenderTransform = new RotateTransform(-90); // Turn it other way
-                        visualCard.Margin = new Thickness(0, i * 18, 0, 0);
-                    }
-                    else if (p == 3) // AI 3 (Top)
+                    else if (p == 2) // CPU North (Top)
                     {
                         visualCard.Margin = new Thickness(i * 25, 0, 0, 0);
+                    }
+                    else if (p == 3) // CPU East (Right Side)
+                    {
+                        visualCard.RenderTransform = new RotateTransform(-90);
+                        visualCard.Margin = new Thickness(0, i * 18, 0, 0);
                     }
 
                     zones[p].Children.Add(visualCard);
@@ -365,6 +365,7 @@ namespace Hearts_Game
             {
                 parent.Children.Remove(visualCard);
             }
+            RefreshGameBoard();
 
             // Stop clicks during animation
             visualCard.IsHitTestVisible = false;
@@ -401,19 +402,19 @@ namespace Hearts_Game
             {
                 From = startMargin,
                 To = endMargin,
-                Duration = TimeSpan.FromMilliseconds(300),
-                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                Duration = TimeSpan.FromMilliseconds(420),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
 
             visualCard.BeginAnimation(FrameworkElement.MarginProperty, slideAnim);
 
-            await Task.Delay(330);
+            await Task.Delay(450);
 
             _cardsPlayedThisTrick++;
 
             // Refresh again after the card is visually placed
             RefreshInfoPanels();
-
+            await Task.Delay(120);
             await AdvanceTurnAsync();
         }
 
@@ -486,7 +487,7 @@ namespace Hearts_Game
         {
             while (_currentPlayerIndex != 0 && _cardsPlayedThisTrick < 4)
             {
-                await Task.Delay(500);
+                await Task.Delay(700);
 
                 var cpuPlayer = GameManager.Instance.players[_currentPlayerIndex];
 

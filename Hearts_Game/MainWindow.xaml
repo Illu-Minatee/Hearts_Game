@@ -182,7 +182,7 @@
                           Height="270"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
-                          Margin="0,-60,0,0"
+                          Margin="0,-30,0,0"
                           Background="Transparent"
                           Panel.ZIndex="10">
                         <Border BorderBrush="#CCCCCC"
