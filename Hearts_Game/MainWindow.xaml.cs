@@ -518,11 +518,7 @@ namespace Hearts_Game
                 await PlayCardToCenterAsync(cpuVisual, _currentPlayerIndex);
             }
         }
-        private void OnClearTableClick(object sender, RoutedEventArgs e)
-        {
-            // Remove the 4 cards from the center trick area
-            trickCards.Children.Clear();
-        }
+
 
         private async void OnNewGameClick(object sender, RoutedEventArgs e)
         {

@@ -205,12 +205,6 @@
                                 Height="38"
                                 Margin="8"/>
 
-                        <Button x:Name="btnClear"
-                                Content="Clear Table"
-                                Click="OnClearTableClick"
-                                Width="140"
-                                Height="38"
-                                Margin="8"/>
                     </StackPanel>
                 </Grid>
 
