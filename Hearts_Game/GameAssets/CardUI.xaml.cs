@@ -66,6 +66,7 @@ namespace Hearts_Game.GameAssets
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (!_isInteractable) return;
+            if (!_isInteractable) return;
 
             // 1. Get a reference to your main window
             if (Application.Current.MainWindow is MainWindow mainWin)
@@ -83,8 +84,18 @@ namespace Hearts_Game.GameAssets
                 }
                 else
                 {
+                   if (GameManager.Instance.CurrentTrick.Count == 0 && CardData.Suit == CardSuit.Hearts &&
+                      !GameManager.Instance.HeartsBroken)
+                    {
+                        MessageBox.Show("Hearts are not broken yet.");
+                    }
+                
+                else
+                {
                     MessageBox.Show("You must follow the same suit if you have it.");
                 }
+
+               }
             }
         }
 
