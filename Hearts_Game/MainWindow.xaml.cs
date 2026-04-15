@@ -23,8 +23,10 @@ namespace Hearts_Game
         private string _humanPlayerName = "Player";
         private int _currentPlayerIndex = 0;
         private int _cardsPlayedThisTrick = 0;
+        private int _trickNumber = 1;
         private bool _isAnimatingCard = false;
         private CardSuit? _leadSuit = null;
+
 
         public MainWindow()
         {
@@ -97,6 +99,7 @@ namespace Hearts_Game
             _currentPlayerIndex = 0;
             _cardsPlayedThisTrick = 0;
             _isAnimatingCard = false;
+            _trickNumber = 1;
 
             RefreshGameBoard();
             RefreshInfoPanels();
@@ -440,6 +443,7 @@ namespace Hearts_Game
                 GameManager.Instance.ClearTrick();
 
                 _cardsPlayedThisTrick = 0;
+                _trickNumber++;
                 _leadSuit = null;
 
                 // Winner starts next trick
@@ -556,7 +560,7 @@ namespace Hearts_Game
             }
             txtHeartsBroken.Text = "Hearts Broken: " +
                 (GameManager.Instance.HeartsBroken ? "Yes" : "No");
-            txtTrickCount.Text = "Trick #: 1";
+            txtTrickCount.Text = "Trick #: " + _trickNumber;
 
             // Update card count labels
             txtSouthCount.Text = GameManager.Instance.players[0].Name + " Cards: " +
