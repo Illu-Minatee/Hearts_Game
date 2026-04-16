@@ -66,8 +66,12 @@
                         <MenuItem Header="Blue" Click="OnThemeChange" Tag="cardBack_blue3.png"/>
                         <MenuItem Header="Green" Click="OnThemeChange" Tag="cardBack_green3.png"/>
                     </MenuItem>
-                </MenuItem>
 
+                    <MenuItem Header="Score Limit">
+                        <MenuItem Header="50 Points" Click="OnScoreLimitChange" Tag="50"/>
+                        <MenuItem Header="100 Points" Click="OnScoreLimitChange" Tag="100"/>
+                    </MenuItem>
+                </MenuItem>
                 <MenuItem Header="Developer">
                     <MenuItem Header="X-Ray Cards" IsCheckable="True" Click="OnXRayClick"/>
                 </MenuItem>

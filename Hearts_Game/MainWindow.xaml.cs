@@ -26,6 +26,7 @@ namespace Hearts_Game
         private int _trickNumber = 1;
         private bool _isAnimatingCard = false;
         private CardSuit? _leadSuit = null;
+        private int _scoreLimit = 50;
 
 
         public MainWindow()
@@ -295,6 +296,18 @@ namespace Hearts_Game
 
                 // Redraw the board with the new theme
                 RefreshGameBoard();
+            }
+        }
+        private void OnScoreLimitChange(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item)
+            {
+                if (int.TryParse(item.Tag?.ToString(), out int limit))
+                {
+                    _scoreLimit = limit;
+                    AddLog("Score limit changed to " + _scoreLimit + ".");
+                    CheckForGameWinner();
+                }
             }
         }
 
@@ -646,7 +659,7 @@ namespace Hearts_Game
 
                 "Goal\n\n" +
                 "Avoid collecting hearts and the Queen of Spades.\n" +
-                "The player with the lowest score wins."
+                "The player with the lowest score wins when the score limit is reached."
             );
         }
 
@@ -654,7 +667,7 @@ namespace Hearts_Game
         {
             foreach (var player in GameManager.Instance.players)
             {
-                if (player.Score >= 50)
+                if (player.Score >= _scoreLimit)
                 {
                     Player lowestPlayer = GameManager.Instance.players[0];
 
