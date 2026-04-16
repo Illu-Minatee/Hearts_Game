@@ -37,10 +37,18 @@ namespace Hearts_Logic.Models.Objects
         {
             return $"{Value} of {Suit}";
         }
+        public int GetRank()
+        {
+            if (Value == 1)
+                return 14; // Ace is highest
+
+            return Value;
+        }
     }
 
     public enum CardSuit
     {
         Hearts, Spades, Clubs, Diamonds
     }
+
 }

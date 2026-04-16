@@ -91,7 +91,7 @@ namespace Hearts_Game
             }
 
             trickCards.Children.Clear();
-            GameManager.Instance.ClearTrick();
+            GameManager.Instance.ResetRoundState();
 
             lstGameLog.Items.Clear();
             GameManager.Instance.SetupDeck();
@@ -435,7 +435,10 @@ namespace Hearts_Game
                 int points = GameManager.Instance.CalculateTrickPoints();
 
                 // Add points to the winner
-                winner.Score += points;
+                if (winner != null)
+                {
+                    winner.Score += points;
+                }
 
                 if (CheckForGameWinner())
                 {
@@ -494,21 +497,31 @@ namespace Hearts_Game
                 if (cpuPlayer.PlayerHand.CardsInHand == 0)
                     return;
 
-                Card cpuCard = null;
-
-                // Find the first valid card the CPU can play
-                foreach (Card card in cpuPlayer.PlayerHand.Cards)
-                {
-                    if (GameManager.Instance.TryPlayCard(cpuPlayer, card))
-                    {
-                        cpuCard = card;
-                        break;
-                    }
-                }
+                
+                Card cpuCard = cpuPlayer.PlayCard();
 
                 if (cpuCard == null)
                 {
                     return;
+                }
+
+                // Validate the chosen card with the game rules.
+                // If AI somehow picks an illegal card, fall back to first legal one.
+                if (!GameManager.Instance.TryPlayCard(cpuPlayer, cpuCard))
+                {
+                    cpuCard = null;
+
+                    foreach (Card card in cpuPlayer.PlayerHand.Cards)
+                    {
+                        if (GameManager.Instance.TryPlayCard(cpuPlayer, card))
+                        {
+                            cpuCard = card;
+                            break;
+                        }
+                    }
+
+                    if (cpuCard == null)
+                        return;
                 }
 
                 CardUI cpuVisual = new CardUI();
@@ -686,7 +699,7 @@ namespace Hearts_Game
             }
 
             trickCards.Children.Clear();
-            GameManager.Instance.ClearTrick();
+            GameManager.Instance.ResetRoundState();
             GameManager.Instance.SetupDeck();
             GameManager.Instance.DealCards();
 

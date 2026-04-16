@@ -22,7 +22,13 @@ namespace Hearts_Logic.Managers
         public List<(Player player, Card card)> CurrentTrick { get; private set; } = new();
         private CardSuit? _leadSuit = null;
         private bool _heartsBroken = false;
-        public CardSuit? LeadSuit => _leadSuit;
+        public CardSuit? LeadSuit
+        {
+            get
+            {
+                return _leadSuit;
+            }
+        }
 
         public bool HeartsBroken
         {
@@ -201,6 +207,12 @@ namespace Hearts_Logic.Managers
         {
             CurrentTrick.Clear();
             _leadSuit = null;
+        }
+        public void ResetRoundState()
+        {
+            CurrentTrick.Clear();
+            _leadSuit = null;
+            _heartsBroken = false;
         }
         private int GetCardRank(Card card)
         {
