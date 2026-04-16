@@ -130,6 +130,11 @@
                                        FontSize="16"
                                        Margin="0,6,0,0"
                                        Text="Trick #: 1"/>
+                            
+                            <TextBlock x:Name="txtDealer"
+                                       FontSize="16"
+                                       Margin="0,6,0,0"
+                                       Text="Dealer: Player"/>
 
                             <!-- Cards left for each player -->
                             <TextBlock x:Name="txtSouthCount"

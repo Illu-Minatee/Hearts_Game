@@ -27,7 +27,7 @@ namespace Hearts_Game
         private bool _isAnimatingCard = false;
         private CardSuit? _leadSuit = null;
         private int _scoreLimit = 50;
-
+        private int _dealerIndex = 0;
 
         public MainWindow()
         {
@@ -97,13 +97,19 @@ namespace Hearts_Game
             lstGameLog.Items.Clear();
             GameManager.Instance.SetupDeck();
             GameManager.Instance.DealCards();
-            _currentPlayerIndex = 0;
+            _dealerIndex = 0;
+            _currentPlayerIndex = (_dealerIndex + 1) % 4;
             _cardsPlayedThisTrick = 0;
             _isAnimatingCard = false;
             _trickNumber = 1;
 
             RefreshGameBoard();
             RefreshInfoPanels();
+
+            if (_currentPlayerIndex != 0)
+            {
+                _ = PlaySimpleCpuTurnsAsync();
+            }
 
             AddLog($"New game started for {_humanPlayerName}.");
             AddLog("Cards dealt to all 4 players.");
@@ -596,6 +602,7 @@ namespace Hearts_Game
             txtHeartsBroken.Text = "Hearts Broken: " +
                 (GameManager.Instance.HeartsBroken ? "Yes" : "No");
             txtTrickCount.Text = "Trick #: " + _trickNumber;
+            txtDealer.Text = "Dealer: " + GameManager.Instance.players[_dealerIndex].Name;
 
             // Update card count labels
             txtSouthCount.Text = GameManager.Instance.players[0].Name + " Cards: " +
@@ -720,10 +727,15 @@ namespace Hearts_Game
             _leadSuit = null;
             _trickNumber = 1;
             _isAnimatingCard = false;
-            _currentPlayerIndex = 0;
+            _dealerIndex = (_dealerIndex + 1) % 4;
+            _currentPlayerIndex = (_dealerIndex + 1) % 4;
 
             RefreshGameBoard();
             RefreshInfoPanels();
+            if (_currentPlayerIndex != 0)
+            {
+                _ = PlaySimpleCpuTurnsAsync();
+            }
 
             AddLog("New hand started.");
             AddLog("Cards dealt to all 4 players.");
