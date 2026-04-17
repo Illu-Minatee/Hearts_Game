@@ -28,6 +28,7 @@ namespace Hearts_Game
         private CardSuit? _leadSuit = null;
         private int _scoreLimit = 50;
         private int _dealerIndex = 0;
+        private Hearts_Logic.Services.DatabaseManager _database = new Hearts_Logic.Services.DatabaseManager();
 
         public MainWindow()
         {
@@ -85,18 +86,21 @@ namespace Hearts_Game
             GameManager.Instance.players.Add(new AIPlayer("CPU North"));         // 2 → North
             GameManager.Instance.players.Add(new AIPlayer("CPU East"));          // 3 → East
 
+            _database.SaveCurrentPlayerName(_humanPlayerName);
             foreach (var player in GameManager.Instance.players)
             {
                 player.ClearHand();
                 player.Score = 0;
             }
 
+            _database.ResetAllScores(GameManager.Instance.players);
             trickCards.Children.Clear();
             GameManager.Instance.ResetRoundState();
 
             lstGameLog.Items.Clear();
             GameManager.Instance.SetupDeck();
             GameManager.Instance.DealCards();
+            _database.LoadAllScores(GameManager.Instance.players);
             _dealerIndex = 0;
             _currentPlayerIndex = (_dealerIndex + 1) % 4;
             _cardsPlayedThisTrick = 0;
@@ -457,6 +461,7 @@ namespace Hearts_Game
                 if (winner != null)
                 {
                     winner.Score += points;
+                    _database.SaveAllScores(GameManager.Instance.players);
                 }
 
                 if (CheckForGameWinner())
@@ -741,5 +746,76 @@ namespace Hearts_Game
             AddLog("Cards dealt to all 4 players.");
         }
 
+        private async void OnStartNewGameClick(object sender, RoutedEventArgs e)
+        {
+            if (txtPlayerName.Text == "")
+                _humanPlayerName = "Player";
+            else
+                _humanPlayerName = txtPlayerName.Text;
+
+            LoadingOverlay.Visibility = Visibility.Visible;
+            await Task.Delay(1000);
+
+            StartNewGame();
+
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+            StartScreen.Visibility = Visibility.Collapsed;
+            GameScreen.Visibility = Visibility.Visible;
+        }
+        private async void OnContinueGameClick(object sender, RoutedEventArgs e)
+        {
+            _humanPlayerName = _database.LoadCurrentPlayerName();
+            txtPlayerName.Text = _humanPlayerName;
+
+            LoadingOverlay.Visibility = Visibility.Visible;
+            await Task.Delay(1000);
+
+            StartSavedGame();
+
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+            StartScreen.Visibility = Visibility.Collapsed;
+            GameScreen.Visibility = Visibility.Visible;
+        }
+        private void StartSavedGame()
+        {
+            GameManager.Instance.players.Clear();
+
+            GameManager.Instance.players.Add(new HumanPlayer(_humanPlayerName));
+            GameManager.Instance.players.Add(new AIPlayer("CPU West"));
+            GameManager.Instance.players.Add(new AIPlayer("CPU North"));
+            GameManager.Instance.players.Add(new AIPlayer("CPU East"));
+
+            foreach (var player in GameManager.Instance.players)
+            {
+                player.ClearHand();
+            }
+
+            trickCards.Children.Clear();
+            GameManager.Instance.ResetRoundState();
+
+            lstGameLog.Items.Clear();
+
+            GameManager.Instance.SetupDeck();
+            GameManager.Instance.DealCards();
+
+            // Load saved scores
+            _database.LoadAllScores(GameManager.Instance.players);
+
+            _currentPlayerIndex = (_dealerIndex + 1) % 4;
+            _cardsPlayedThisTrick = 0;
+            _isAnimatingCard = false;
+            _trickNumber = 1;
+
+            RefreshGameBoard();
+            RefreshInfoPanels();
+
+            AddLog("Saved game loaded.");
+            AddLog("Cards dealt.");
+
+            if (_currentPlayerIndex != 0)
+            {
+                PlaySimpleCpuTurnsAsync();
+            }
+        }
     }
 }

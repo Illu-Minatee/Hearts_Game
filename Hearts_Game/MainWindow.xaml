@@ -38,11 +38,24 @@
                              Text="Player"
                              Margin="0,0,0,20"/>
 
-                    <Button x:Name="btnStartFromIntro"
-                            Content="Start Game"
-                            Height="45"
-                            FontSize="18"
-                            Click="OnStartFromIntroClick"/>
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="0,10,0,0">
+
+                        <Button Content="New Game"
+                                Width="140"
+                                Height="45"
+                                Margin="10"
+                                Click="OnStartNewGameClick"/>
+
+                        <Button Content="Continue"
+                                Width="140"
+                                Height="45"
+                                Margin="10"
+                                Click="OnContinueGameClick"/>
+
+                    </StackPanel>
+
                 </StackPanel>
             </Border>
         </Grid>
@@ -201,20 +214,6 @@
                                 Background="#145A14"/>
                         <Grid x:Name="trickCards"/>
                     </Grid>
-
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Bottom"
-                                Margin="0,0,0,10"
-                                Panel.ZIndex="20">
-                        <Button x:Name="btnStartGame"
-                                Content="New Game"
-                                Click="OnNewGameClick"
-                                Width="140"
-                                Height="38"
-                                Margin="8"/>
-
-                    </StackPanel>
                 </Grid>
 
                 <!-- RIGHT PANEL -->
