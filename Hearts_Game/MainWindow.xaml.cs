@@ -491,6 +491,12 @@ namespace Hearts_Game
                 {
                     MessageBox.Show("Hand finished. Starting a new hand.", "Hearts");
                     StartNextHand();
+
+                    if (_currentPlayerIndex != 0)
+                    {
+                        await PlaySimpleCpuTurnsAsync();
+                    }
+
                     return;
                 }
 
@@ -737,10 +743,7 @@ namespace Hearts_Game
 
             RefreshGameBoard();
             RefreshInfoPanels();
-            if (_currentPlayerIndex != 0)
-            {
-                _ = PlaySimpleCpuTurnsAsync();
-            }
+       
 
             AddLog("New hand started.");
             AddLog("Cards dealt to all 4 players.");
